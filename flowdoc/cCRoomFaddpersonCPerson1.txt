@@ -1,0 +1,7 @@
+@startuml
+
+start
+:#yellow:do important stuff;
+:do stuff;
+
+@enduml
