@@ -1,0 +1,8 @@
+@startuml
+
+start
+:#yellow:do VINCIA parton shower;
+
+stop
+
+@enduml

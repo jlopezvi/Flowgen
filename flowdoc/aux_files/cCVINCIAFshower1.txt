@@ -1,0 +1,11 @@
+@startuml
+
+start
+:#yellow:do VINCIA parton shower;
+:1) prepare system of partons;
+:2) do phase 1 of shower;
+:3)...;
+
+stop
+
+@enduml

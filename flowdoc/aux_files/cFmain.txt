@@ -1,0 +1,14 @@
+@startuml
+
+start
+:#yellow:ask user whether to proceed;
+
+if (control_flag==1) then(yes)
+   :#yellow:call shower\n--------\nVOID VINCIA::shower() -- [[source1.html#cCVINCIAFshower]]\n;
+else
+endif
+
+
+stop
+
+@enduml
