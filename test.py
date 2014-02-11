@@ -64,7 +64,7 @@ def lookfor_ActionComment_in_node(nodeIN,zoom):
 
 #looks up in the database generated at compilation time if a given key (function/method' USR) exists
 def read_flowdbs(key):
-    for file in glob.glob('flowdoc/*.flowdb'):
+    for file in glob.glob('flowdoc/aux_files/*.flowdb'):
        reader = csv.reader(open(file, "rt", encoding="utf8"), delimiter='\t')
        for row in reader:
           if key==row[0]:
@@ -105,7 +105,7 @@ def write_htmlonline(string,outfile_str):
 
 #writes each diagram separately into a plantuml .txt file
 def write_txt(string,outfile_str):
-   f = open('flowdoc/'+outfile_str+".txt","w")
+   f = open('flowdoc/aux_files/'+outfile_str+".txt","w")
    f.write(string)
    f.close()
    return

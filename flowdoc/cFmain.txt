@@ -1,8 +1,0 @@
-@startuml
-
-start
-:#yellow:action number 1 \n--------\nVOID VINCIA::shower() -- [[t.html#cCVINCIAFshower]]\n;
-
-stop
-
-@enduml

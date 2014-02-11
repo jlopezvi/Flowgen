@@ -1,6 +1,0 @@
-@startuml
-
-start
-:#yellow:TEST Visited VINCIA::shower;
-
-@enduml

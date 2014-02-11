@@ -2,10 +2,12 @@
 # === UPDATE FLOWGEN DOCUMENTATION ===
 #----------------------------------------------------------------------
 
+
 CCSOURCEFILES := $(shell ls src/*.cpp)
-SOURCEFLOWDOCS_FROMCCSOURCEFILES := $(shell ls src/*.cpp | sed s/"src\/"/"flowdoc\/"/)
-FLOWDOCS:= $(SOURCEFLOWDOCS_FROMCCSOURCEFILES:.cpp=.html) flowdoc/simple_demo_src.html
-FLOWDBS:= $(SOURCEFLOWDOCS_FROMCCSOURCEFILES:.cpp=.flowdb) flowdoc/simple_demo_src.flowdb
+FLOWHTML_FROMCCSOURCEFILES := $(shell ls src/*.cpp | sed s/"src\/"/"flowdoc\/"/)
+FLOWDBS_FROMCCSOURCEFILES := $(shell ls src/*.cpp | sed s/"src\/"/"flowdoc\/aux_files\/"/)
+FLOWHTML:= $(FLOWHTML_FROMCCSOURCEFILES:.cpp=.html) flowdoc/simple_demo_src.html
+FLOWDBS:= $(FLOWDBS_FROMCCSOURCEFILES:.cpp=.flowdb) flowdoc/aux_files/simple_demo_src.flowdb
 
 #$(TMPDIR)/%.txt : src/%.cpp
 #	@echo "cc-to-txt: processing $^ to make $@"
@@ -20,22 +22,22 @@ FLOWDBS:= $(SOURCEFLOWDOCS_FROMCCSOURCEFILES:.cpp=.flowdb) flowdoc/simple_demo_s
 
 all: flowdoc
 
-flowdoc/%.flowdb : src/%.cpp simple_demo_src.cpp pretest.py
+flowdoc/aux_files/%.flowdb : src/%.cpp simple_demo_src.cpp pretest.py
 	@echo "cpp-to-flowdb: preprocessing"
 	python3 pretest.py simple_demo_src.cpp
 	python3 pretest.py $^
 		
-flowdoc/.runphase: $(CCSOURCEFILES) simple_demo_src.cpp test.py
+flowdoc/aux_files/.runphase: $(CCSOURCEFILES) simple_demo_src.cpp test.py
 	@echo "cpp-to-graphs: depends on $^"
 	python3 test.py simple_demo_src.cpp
 	python3 test.py $^
-	cd flowdoc && java -jar plantuml.jar *.txt
-	cat <<EOF > flowdoc/.runphase
+	cd flowdoc/aux_files && java -jar plantuml.jar *.txt
+	cat <<EOF > flowdoc/aux_files/.runphase
 	
-flowdoc/%.html : flowdoc/%.flowdb posttest.py flowdoc/.runphase
+flowdoc/%.html : flowdoc/aux_files/%.flowdb posttest.py flowdoc/aux_files/.runphase
 	@echo "to-html: processing $^ to make $@"
 	python3 posttest.py $^
 			
-flowdoc: simple_demo_src.cpp src/*.cpp $(FLOWDBS) $(FLOWDOCS) Makefile flowdoc/.runphase 
+flowdoc: simple_demo_src.cpp src/*.cpp $(FLOWDBS) $(FLOWHTML) Makefile flowdoc/aux_files/.runphase 
 	@echo "Hopla! Finished flowdoc creation. Check flowdocs."
 	

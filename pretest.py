@@ -92,6 +92,6 @@ tu = index.parse(sys.argv[1],args)
 print ('Translation unit:', tu.spelling.decode("utf-8"))
 infile_str=os.path.splitext(os.path.basename(sys.argv[1]))[0]
 print (infile_str)
-writefunc = open('flowdoc/'+infile_str+'.flowdb',"w")
+writefunc = open('flowdoc/aux_files/'+infile_str+'.flowdb',"w")
 find_functions(tu.cursor)
 writefunc.close()

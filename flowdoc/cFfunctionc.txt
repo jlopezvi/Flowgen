@@ -1,8 +1,0 @@
-@startuml
-
-start
-:#yellow:test visit function c;
-
-stop
-
-@enduml

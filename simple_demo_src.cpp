@@ -1,57 +1,17 @@
-#include "t.h"
+#include "source1.h"
 #include <iostream>
 
-class Person {
-};
-
-
-class Room {
-public:
-    void add_person(Person person)
-    {
-        //$ do important stuff
-        
-        //$1 do stuff
-    }
-
-private:
-    Person* people_in_room;
-};
-
-void function_a(){
-// nothing to do
-}
-
-int function_c(){
-//$ test visit function c
-return 1;
-}
-
-
-
 int main()
-{
-    //$ action
-    //$ number 1 
+{       
+    int control_flag=0;
+    //$ ask user whether to proceed
+    std::cin >> control_flag;
     
-    std::cout<<"test\n";
-    Person* p = new Person();
-    
-    
-    function_a(); 
-
-    
-    int testReference = function_c();
-    
-    int var = testReference + 1; 
-    
-    VINCIA* vinciaOBJ = new VINCIA();
-    vinciaOBJ->shower();  //$   
-
-
-    
-
-    //$ [null]
+    if (control_flag==1){
+        //$ call shower
+        //pointer to the object VINCIA
+        VINCIA* vinciaOBJ = new VINCIA();
+        vinciaOBJ->shower();  //$   
+    }	
     return 0;
-
 }
