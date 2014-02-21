@@ -1,0 +1,44 @@
+syntax = dox_info | code | annotation | contextual_annotation.
+dox_info = (dox_info_qt | dox_info_javadoc | dox_info_cpp).
+dox_info_qt = dox_info_begin_qt dox_info_line[{dox_info_line}] dox_info_end_qt | empty_line [{empty_line}] dox_info_end_qt.
+dox_info_javadoc = dox_info_begin_javadoc dox_info_line[{dox_info_line}] dox_info_end_qt | empty_line [{empty_line}] dox_info_end_qt.
+dox_info_begin_javadoc = '/**' ['\brief'] [dox_info_line] newline.
+dox_info_begin_qt = '//!' ['\brief'] [dox_info_line] newline.
+dox_info_line = alpha_or_digit_or_char{alpha_or_digit_or_char} newline.
+dox_info_end_qt = '*/' newline.
+dox_info_cpp =  dox_info_begin_cpp [dox_info_line] {dox_info_begin_cpp [dox_info_line]}.
+dox_info_begin_cpp = ('//!' | '///').
+empty_line = ["*"] newline.
+code = (code_line | annotated_code_line) [ {(code_line | annotated_code_line)}].
+code_line = {alpha_or_digit_or_char} newline.
+annotated_code_line = {alpha_or_digit_or_char} '//$' newline.
+annotation = annotation_begin annotation_line[{annotation_line}].
+contextual_annotation = '//S' contextual_annotation_line.
+contextual_annotation_line =[zoom_level]  SPACE[{SPACE}] "[" [annotation_text] "]" newline.
+annotation_begin = '//$' [zoom_level] SPACE[{SPACE}] {modifier}[annotation_text] newline.
+annotation_line = '//' [annotation_text] newline.
+zoom_level = digit[{digit}].
+annotation_text = {alpha_or_digit_or_char}.
+alpha_or_digit_or_char = alpha_character | digit | allowed_symbol.
+alpha_character = "A" | "B" | "C" | "D" | "E" | "F" | "G"
+                     | "H" | "I" | "J" | "K" | "L" | "M" | "N"
+                     | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
+                     | "V" | "W" | "X" | "Y" | "Z" 
+					 |"a" | "b" | "c" |"d" |"e" |"f" |"g" |"h" |"i" |
+					 "j" |"k" |"l" |"m" |"n" |"o" |"p" |"q" |"r" |"s" |
+					 "t" |"u" |"v" |"w" |"x" |"y" |"z".
+allowed_symbol =	 "_" |"\" |"*" |"%" |"#" |"@" |"^" |"&" |"(" |")" |"-" |"=" | "<" |">" | "+" | "?" | "." |"," | "!" | ";" | ":" | SPACE.
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9".					 
+modifier = "<" modifier_type ">".
+modifier_type = 'keepFormat' | 'parallel' | 'comment'.
+newline = ["CR"]"LF".
+SPACE = " ".
+
+ 
+(* 
+THESE LINES ARE FOR THE SPECIAL CASE OF if statements which are formatted as actions
+annotation_if_condition_line = iftrue_condition_line | elseif_condition_line |else_condition_line.
+iftrue_condition_line = 'if:' SPACE[{SPACE}] annotation_text "$" annotation_text "$" annotation_text newline.
+elseif_condition_line = 'elseif:' SPACE[{SPACE}] annotation_text "$" annotation_text newline.
+else_condition_line = 'else:' SPACE[{SPACE}] annotation_text "$" annotation_text newline.
+*)

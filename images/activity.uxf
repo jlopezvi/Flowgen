@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="12.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.umlet.element.ActivityDiagramText</type>
+    <coordinates>
+      <x>230</x>
+      <y>60</y>
+      <w>320</w>
+      <h>199</h>
+    </coordinates>
+    <panel_attributes>title: type namespace::class::method(args)
+Start
+             action 1 description             
+             action 2 description             
+End
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
