@@ -15,19 +15,28 @@
         
   </head>
   <script language="JavaScript" src="functions.js"></script>
+  
+
+  	
   <body class="composite">
+  
+    <!--#include file="header.html" -->
     <div id="banner">
-                <br><br>
-                <div id="bannerLeft">
                 <br>
-                Flowgen: Generates high-level workflow diagrams from C++ annotated sources.
+                <div id="bannerLeft">
+                <img src="images/logo.JPG" alt="Flowgen_logo" height="120" />
+                <br> <br> <br>
+                <font color=#69c>Flowgen:</font> workflow-based documentation in C/C++.
+                <br><br>
                 </div>
                                 
                 <a id="forkme_banner" href="https://github.com/jlopezvi/Flowgen">View on GitHub</a>
 
+                <!-- 
                 <a href="" id="bannerRight" title="Checkstyle">
-                  <img src="images/logo.png" alt="Checkstyle" />
+                  <img src="images/logo.JPG" alt="Flowgen_logo" height="50" />
                 </a>
+                -->
             <div class="clear">
         <hr/>
       </div>
@@ -63,7 +72,7 @@
   
     <div class="section"><h2>about<a name="actions"></a></h2>
     <p>
-     <b>Documenting C++ code through flowcharts, generated from special comments.</b>
+     <b>Flowgen generates high-level workflow diagrams from C++ annotated sources.</b>
      <br><br>
      We present an annotation grammar for special comments inside a C/C++ source code, such as Doxygen's. Together, these comments have the potential to create flowcharts (activity diagrams [<a href="http://en.wikipedia.org/wiki/Activity_diagram">wikipedia</a>]), showing the actual workings of the code. This provides information on the dynamics, rather than Doxygen's static documentation (classes/objects diagrams). It is specially useful for procedural programming: instead of truly Object Oriented, the code is rather Object Based. This is the scenario in many Physics applications, such as the VINCIA project for LHC Physics (vincia.hepforge.org).
      <br><br>
