@@ -11,72 +11,79 @@ function menu(activeitemdesordered)
 {
 var order=new Array();
 order[0]=0;
-order[1]=1;
-order[2]=2;
-order[3]=3;
-order[4]=4;
-order[5]=5;
-order[6]=6;
-order[7]=7;
-order[8]=8;
-order[9]=9;
-order[10]=10;
-order[11]=11;
-order[12]=12;
-order[13]=13;
-order[14]=14;
-order[15]=15;
-order[16]=16;
+order[1]=3;
+order[2]=4;
+order[3]=5;
+order[4]=6;
+order[5]=7;
+order[6]=8;
+order[7]=9;
+order[8]=10;
+order[9]=11;
+order[10]=12;
+order[11]=13;
+order[12]=14;
+order[13]=15;
+order[14]=16;
+order[15]=17;
+order[16]=18;
+order[17]=2;
+order[18]=1;
 
 var menuitems=new Array();
 menuitems[0]="About";
-menuitems[1]="Actions";
-menuitems[2]="Actions_zooming";
-menuitems[3]="Actions_modifiers";
-menuitems[4]="Classes";
-menuitems[5]="Functions/Methods";
-menuitems[6]="Func/Meth_description";
-menuitems[7]="Func/Meth_returns";
-menuitems[8]="Calls";
-menuitems[9]="Main calls";
-menuitems[10]="IF Statements";
-menuitems[11]="IF Statements_Zooming";
-menuitems[12]="FOR Statements";
-menuitems[13]="FORStatements_Continue";
-menuitems[14]="FORStatements_Break";
-menuitems[15]="Hyperlinks to Code";
-menuitems[16]="To Do Comments";
+menuitems[1]="Simple_example";
+menuitems[2]="Extended_example";
+menuitems[3]="Actions";
+menuitems[4]="Actions_zooming";
+menuitems[5]="Actions_modifiers";
+menuitems[6]="Classes";
+menuitems[7]="Functions/Methods";
+menuitems[8]="Func/Meth_description";
+menuitems[9]="Func/Meth_returns";
+menuitems[10]="Calls";
+menuitems[11]="Main calls";
+menuitems[12]="IF Statements";
+menuitems[13]="IF Statements_Zooming";
+menuitems[14]="FOR Statements";
+menuitems[15]="FORStatements_Continue";
+menuitems[16]="FORStatements_Break";
+menuitems[17]="Hyperlinks to Code";
+menuitems[18]="To Do Comments";
 
 
 var menuitemslinks=new Array();
 menuitemslinks[0]="index.html";
-menuitemslinks[1]="actions.html";
-menuitemslinks[2]="actions_zooming.html";
-menuitemslinks[3]="actions_modifiers.html";
-menuitemslinks[4]="classes.html";
-menuitemslinks[5]="functions_methods.html";
-menuitemslinks[6]="functions_methods_description.html";
-menuitemslinks[7]="functions_methods_returns.html";
-menuitemslinks[8]="calls.html";
-menuitemslinks[9]="calls_main.html";
-menuitemslinks[10]="IFstatements.html";
-menuitemslinks[11]="IFstatements_zooming.html";
-menuitemslinks[12]="FORstatements.html";
-menuitemslinks[13]="FORstatements_continue.html";
-menuitemslinks[14]="FORstatements_break.html";
-menuitemslinks[15]="codereferences.html";
-menuitemslinks[16]="toDoComments.html";
+menuitemslinks[1]="simple_example.html";
+menuitemslinks[2]="extended_example.html";
+menuitemslinks[3]="actions.html";
+menuitemslinks[4]="actions_zooming.html";
+menuitemslinks[5]="actions_modifiers.html";
+menuitemslinks[6]="classes.html";
+menuitemslinks[7]="functions_methods.html";
+menuitemslinks[8]="functions_methods_description.html";
+menuitemslinks[9]="functions_methods_returns.html";
+menuitemslinks[10]="calls.html";
+menuitemslinks[11]="calls_main.html";
+menuitemslinks[12]="IFstatements.html";
+menuitemslinks[13]="IFstatements_zooming.html";
+menuitemslinks[14]="FORstatements.html";
+menuitemslinks[15]="FORstatements_continue.html";
+menuitemslinks[16]="FORstatements_break.html";
+menuitemslinks[17]="codereferences.html";
+menuitemslinks[18]="toDoComments.html";
+
 
 for (var i=0;i<menuitems.length;i++)
 {
  if (i==0) menusep("About");
- if (i==1) menusep("Actions");
- if (i==4) menusep("Classes");
- if (i==5) menusep("Functions/Methods");
- if (i==8) menusep("Calls");
- if (i==10) menusep("Flow Bifurcations - IF")
- if (i==12) menusep("Flow Bifurcations - LOOPS")
- if (i==15) menusep("Others")
+ if (i==3) menusep("Actions");
+ if (i==6) menusep("Classes");
+ if (i==7) menusep("Functions/Methods");
+ if (i==10) menusep("Calls");
+ if (i==12) menusep("Flow Bifurcations - IF")
+ if (i==14) menusep("Flow Bifurcations - LOOPS")
+ if (i==17) menusep("Others")
   
  if (i==order[activeitemdesordered])
  { menuentry(menuitems[i],".");}

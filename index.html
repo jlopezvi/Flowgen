@@ -41,51 +41,15 @@
     <p>
      <b>Flowgen generates high-level workflow diagrams from C++ annotated sources.</b>
      <br><br>
-     We present an annotation grammar for special comments inside a C/C++ source code, such as Doxygen's. Together, these comments have the potential to create flowcharts (activity diagrams [<a href="http://en.wikipedia.org/wiki/Activity_diagram">wikipedia</a>]), showing the actual workings of the code. This provides information on the dynamics, rather than Doxygen's static documentation (classes/objects diagrams). It is specially useful for procedural programming: instead of truly Object Oriented, the code is rather Object Based. This is the scenario in many Physics applications, such as the VINCIA project for LHC Physics (vincia.hepforge.org).
+     Modern high-performance computing often involves fairly complex algorithms written in C++. This complexity comes, roughly speaking, from two aspects: the high-level (abstract) design, and the details of the specific code implementation. Code developers would like to disentangle the two. Software documentation for developers does not however offer a human-understandable, high-level overview of what the code actually <em>does</em>. It also fails to keep this overview up to date with the code. Good coding standards and strategies such as code modularity surely help, but cannot substitute for this high-level overview.
      <br><br>
-     The implementation of a tool that interprets those (contextual) comments would be based on clang AST and a diagram generator (such as graphviz, PlantUML or UMLet). <em>Scientific collaborations are encouraged</em>.
+     As a matter of fact, most codes include comments on the actions being performed in the neighboring lines. Our proposal is to promote them: upgrade them and bring them out. Given that a C++ program has a beginning and an end, both in the <code>main()</code> function, we can collect together these actions plus additional information on the control structures in order to form what is known as a <em>workflow</em>. Moreover, the same idea can apply to code substructures such as other functions than <code>main()</code>, or class methods (member functions). Here we will be dealing with a <em>high-level</em> workflow (technically a <em>UML activity diagram</em> [<a href="http://en.wikipedia.org/wiki/Activity_diagram">wikipedia</a>]), in close relation to the high-level design, implying that its actions are written down in a human language, by the code architects/developers, rather than machine-generated C++ statements. The open source Flowgen tool can generate a high-level workflow diagram for each annotated function on the C++ sources.  
+     <br><br>
+     Flowgen builds on the methodology of <a href="http://www.doxygen.org">Doxygen</a>, the de facto standard tool for generating documentation from annotated C++ sources, so that source code and workflow diagrams are bound together and easy to maintain consistent. Doxygen provides <em>structural</em> information, and Flowgen <em>behavioral</em> one; they are thus complementary. Flowgen is currently being applied to the <a href=http://vincia.hepforge.org">VINCIA code</a>, a plug-in to the high-energy physics event generator PYTHIA 8, used to simulate proton-proton collisions at CERN's Large Hadron Collider.
+     <br><br><br>
+     In this website we present the annotations grammar (INPUT) and the resulting workflow diagrams (OUTPUT) that are generated with Flowgen. The specifications for this annotations grammar exist in the Extended Backus-Naur Form, .EBNF format. Download the current file from <a href="docs/activityDiabrams.ebnf"> this link </a>[To be revised]. In order to visualize conveniently the .EBNF format, one can use the software <a href="http://ebnfvisualizer.sourceforge.net/">EBNF Visualizer</a>. 
       <br><br>
-      The specifications for this annotation grammar exist in the Extended Backus-Naur Form, .EBNF format. Download the file from <a href="docs/activityDiabrams.ebnf"> this link </a>. In order to visualize conveniently the .EBNF format, one can use the software <a href="http://ebnfvisualizer.sourceforge.net/">EBNF Visualizer</a>. 
-      <br><br>
-      <table>
-      <tr>
-          <td valign="top"> 
-          <b>Source code (annotated) --></b> <br><br>
-            bool VinciaShower::acceptTrial(Event& event) {
-    
-    int iTrial     = winnerPtr->getTrialIndex(); <br>
-    int iAntPhys   = winnerPtr->getPhysIndex(iTrial); <br>
-    bool isSwapped = winnerPtr->getIsSwapped(iTrial); <br>
-    <br>
-    double qNew  = winnerPtr->getTrialScale(iTrial); <br>
-    double mAnt  = winnerPtr->m(); <br>
-    double sAnt  = winnerPtr->s(); <br>
-    <br>
-    //$ Mark this trial as "used", will need to generate a new one. <br>
-    winnerPtr->renewTrial(iTrial);<br>
-    <br>
-    //$1 Count up total number of trials <br>
-    ++nTrialsSum; <br>
-    
-    //************************************************* <br>
-    //$ Generate zeta variable, then work out y12, y23 <br>
-    //************************************************* <br>
-    <br>
-    double y12, y23; <br>
-    bool pass = winnerPtr->genTrialInvariants(y12, y23, iTrial);   //$ <br>
-    //$1 [trial invariants are not in the good region of P.S.]   <br>  
-    if (! pass) {   //$ <br>
- 
-      <br>
-          <a href="docs/VinciaShower_annotated_v20082013.cc">See the complete file (.cc, text file)</a>          
-          </td>
-          
-          <td valign="top">
-          <b>Flowchart (Activity Diagram)</b> <br><br>
-          <img src="images/boolVinciaShowerAcceptTrial.png" alt="image" width=400 />
-          </td>
-       </tr>
-       </table>
+      If you use Flowgen in connection with scientific research work, please refer to: [reference to appear soon].
     </p>
 
 
