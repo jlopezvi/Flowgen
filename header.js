@@ -1,10 +1,8 @@
 document.write('\
     <div id="banner">\
-                <br>\
+                <br><br><br><br><br>\
                 <div id="bannerLeft">\
-                <a href="index.html"><img src="images/logo.JPG" alt="Flowgen_logo" height="120" /></a>\
-                <br> <br> <br>\
-                <font color=#69c>Flowgen:</font> workflow-based documentation in C/C++.\
+                <a href="index.html"><img src="images/logo1.png" alt="Flowgen_logo" height="50" /></a> &nbsp; <font color=#69c>Flowgen:</font> workflow-based documentation in C/C++.\
                 <br><br>\
                 </div>\
 \
