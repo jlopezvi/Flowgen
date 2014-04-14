@@ -2,7 +2,7 @@ document.write('\
     <div id="banner">\
                 <br><br><br><br><br>\
                 <div id="bannerLeft">\
-                &nbsp; <font color=#69c>Flowgen:</font> workflow-based documentation in C/C++.\
+                &nbsp; <font color=#69c>Flowgen:</font> flowchart-based documentation in C/C++.\
                 <br><br>\
                 </div>\
 \
