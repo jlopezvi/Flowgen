@@ -6,6 +6,8 @@ import os
 import glob
 import csv
 
+#colors:  http://www.color-hex.com/color/6699cc#    chosen (#84add6, #b2cce5, #e0eaf4)
+ 
 #clang node types (CursorKind)
 #21: CXX_METHOD
 #205: if statement
@@ -299,11 +301,12 @@ def process_find_functions(node):
     regexActionComment = re.compile(regextextActionComment)
     regexActionComment1 = re.compile(regextextActionComment1)
     regexAnyActionCommentZoomArray = [regexActionComment, re.compile(regextextAnyActionComment1)]
-    regexContextualComment = re.compile(r'^\s*//\$\s+\[(?P<action>.+)\]\s*$')
+    regexContextualComment = re.compile(r'^\s*//\$\s+\[(?P<condition>.+)\]\s*$')
     regexHighlightComment = re.compile(r'^\s*(?P<commandline>.+?)\s+//\$\s*(?:$|//.+$)') 
-    regexIf = re.compile(r'^\s*if\s*\((?P<condition>.*)\)\s*{\s*(?:$|//.*$)')
-    regexIf1line = re.compile(r'^\s*if\s*\((?P<condition>.*)\)\s*{\s*(?:$|//.*$)')
-    regexElseIf = re.compile(r'^\s*}\s*else if\s*\((?P<condition>.*)\)\s*{\s*(?:$|//.*$)')
+    regexIf = re.compile(r'^\s*if\s*\((?P<condition>.*)\)\s*{?\s*(?:$|//.*$)')
+    regexElseIf = re.compile(r'^\s*}?\s*else if\s*\((?P<condition>.*)\)\s*{\s*(?:$|//.*$)')
+    #this only works in a one line
+    #regexIf1line = re.compile(r'^\s*if\s*\((?P<condition>.*)\)\s*{\s*(?:$|//.*$)')
 
     start_line= node.extent.start.line
     end_line= node.extent.end.line     
@@ -396,7 +399,7 @@ def process_find_functions(node):
                       classname = ''
                       if it7.kind.name=='CXX_METHOD':
                          classname= str(it7.semantic_parent.spelling.decode("utf-8"))+'::'
-                      last_comment_str+=str(it7.result_type.kind.name)+' '+classname+str(it7.displayname.decode("utf-8"))+' -- [['+call_in_filename_str+'#'+usr_id_str+']]'+'\\n'
+                      last_comment_str+=str(it7.result_type.kind.name)+' '+classname+str(it7.displayname.decode("utf-8"))+' -- [['+call_in_filename_str+'#'+usr_id_str+' link]]'+'\\n'
                       #last_comment_str+=str(it7.result_type.kind.name)+' '+str()+str(it7.displayname.decode("utf-8"))+' -- [[http://www.google.es]]'+'\\n'
                  last_comment_str+=';\n'
               if string_notes != "":
@@ -408,7 +411,7 @@ def process_find_functions(node):
               actioncallsdefArray=[]
            return
         
-        string+='@startuml\n\nstart\n'
+        string+='@startuml\n\nstart\n skinparam activityBackgroundColor #84add6 \n'
         
         #main loop over source code lines
         for i, line in enum_file:
@@ -432,7 +435,11 @@ def process_find_functions(node):
                     #write 'if' in string
                     ifstmt=regexIf.match(line)
                     if ifstmt:
-                      string+= '\n'+ 'if ('+ifstmt.group('condition')+') then(yes)''\n'
+                      description = regexContextualComment.match(enum_file[i-1-1][1])
+                      if description:
+                         string+= '\n'+ 'if ('+description.group('condition')+') then(yes)''\n'
+                      else:
+                         string+= '\n'+ 'if ('+ifstmt.group('condition')+' ?) then(yes)''\n'
                     else:
                       print ('Error: condition not picked up at line', line) 
                       string+= indentation_level*tab +'\n'+ 'if ('+'Error: unknown condition'+') then(yes)''\n'                     
@@ -452,10 +459,14 @@ def process_find_functions(node):
                  #write 'else if' in string
                  elseifstmt=regexElseIf.match(line)
                  if elseifstmt:
-                   string+=(indentation_level-1)*tab+'else'+'\n'+indentation_level*tab+'if ('+elseifstmt.group('condition')+') then (yes)'+'\n'
+                    description = regexContextualComment.match(enum_file[i-1-1][1])
+                    if description:
+                       string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+description.group('condition')+') then (yes)'+'\n'
+                    else:
+                       string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+elseifstmt.group('condition')+' ?) then (yes)'+'\n'
                  else:
                    print ('Error: condition not picked up at line', line) 
-                   string+=(indentation_level-1)*tab+'else'+'\n'+indentation_level*tab+'if ('+'Error: unknown condition'+') then (yes)'+'\n'                    
+                   string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+'Error: unknown condition'+') then (yes)'+'\n'                    
                  indentation_level+=1              
                  #explore elseif and update ifbeginlineLocalArray, ifendlineLocalArray, ifnodeLocalArray
                  ifbeginlineLocalArray, ifendlineLocalArray, ifnodeLocalArray = find_ifstmt(ifstructurenodeArray[elseifNum]) 
@@ -465,7 +476,7 @@ def process_find_functions(node):
                  #write last comment
                  write_last_comment()
                  #write 'else' in string
-                 string+= (indentation_level-1)*tab+'else'+'\n' 
+                 string+= (indentation_level-1)*tab+'else(no)'+'\n' 
                  #explore else and update ifbeginlineLocalArray, ifendlineLocalArray, ifnodeLocalArray
                  ifbeginlineLocalArray, ifendlineLocalArray, ifnodeLocalArray = find_ifstmt(ifstructurenodeArray[-1]) 
 
@@ -475,7 +486,7 @@ def process_find_functions(node):
                    write_last_comment()
                    #is the else condition explicitly written? Otherwise write now
                    if elsebeginline==None:
-                      string+= (indentation_level-1)*tab+'else'+'\n'
+                      string+= (indentation_level-1)*tab+'else(no)'+'\n'
                    #write endif's in string
                    for n in range(elseifNum):
                       string+= (indentation_level-1)*tab+'endif'+'\n'
@@ -507,7 +518,11 @@ def process_find_functions(node):
                     #write 'if' in string
                     ifstmt=regexIf.match(line)
                     if ifstmt:
-                      string+= '\n'+ indentation_level*tab + 'if ('+ifstmt.group('condition')+') then(yes)''\n'
+                      description = regexContextualComment.match(enum_file[i-1-1][1])
+                      if description:
+                         string+= '\n'+ indentation_level*tab + 'if ('+description.group('condition')+') then(yes)''\n'
+                      else:
+                         string+= '\n'+ indentation_level*tab + 'if ('+ifstmt.group('condition')+' ?) then(yes)''\n'
                     else:
                       print ('Error: condition not picked up at line', line) 
                       string+= '\n'+ indentation_level*tab + 'if ('+'Error: unknown condition'+') then(yes)''\n'                     
@@ -525,10 +540,14 @@ def process_find_functions(node):
                  #write 'else if' in string
                  elseifstmt=regexElseIf.match(line)
                  if elseifstmt:
-                   string+=(indentation_level-1)*tab+'else'+'\n'+indentation_level*tab+'if ('+elseifstmt.group('condition')+') then (yes)'+'\n'
+                    description = regexContextualComment.match(enum_file[i-1-1][1])
+                    if description:
+                       string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+description.group('condition')+') then (yes)'+'\n'
+                    else:
+                       string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+elseifstmt.group('condition')+' ?) then (yes)'+'\n'
                  else:
                    print ('Error: condition not picked up at line', line) 
-                   string+=(indentation_level-1)*tab+'else'+'\n'+indentation_level*tab+'if ('+'Error: unknown condition'+') then (yes)'+'\n'                    
+                   string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+'Error: unknown condition'+') then (yes)'+'\n'                    
                  indentation_level+=1              
               
               #if i in elsebeginlineLocal
@@ -536,7 +555,7 @@ def process_find_functions(node):
                  #write last comment
                  write_last_comment()
                  #write 'else' in string
-                 string+= (indentation_level-1)*tab+'else'+'\n' 
+                 string+= (indentation_level-1)*tab+'else(no)'+'\n' 
 
               #if i is ifendlineLocalArray[IdxIfbeginlineArrayLocal] and }'s marked to be written in string:
               elif endifLocalWrite and (i == ifendlineLocalArray[IdxIfbeginlineArrayLocal]): 
@@ -544,7 +563,7 @@ def process_find_functions(node):
                    write_last_comment()
                    #is the else condition explicitly written? Otherwise write now
                    if elsebeginlineLocal==None:
-                      string+= (indentation_level-1)*tab+'else'+'\n' 
+                      string+= (indentation_level-1)*tab+'else(no)'+'\n' 
                    #write endif's in string
                    for n in range(elseifNumLocal):
                       string+= (indentation_level-1)*tab+'endif'+'\n'
@@ -583,9 +602,9 @@ def process_find_functions(node):
                          comment = regexActionComment.match(line)
                          comment1 = regexActionComment1.match(line)
                          if comment:
-                            last_comment_str+= indentation_level*tab +':#yellow:'+comment.group('action')+';\n'
+                            last_comment_str+= indentation_level*tab +':#84add6:'+comment.group('action')+';\n'
                          elif comment1:
-                            last_comment_str+= indentation_level*tab +':'+comment1.group('action')+';\n'
+                            last_comment_str+= indentation_level*tab +':#b2cce5:'+comment1.group('action')+';\n'
                       lastcommentlinematched = i            
 
                 elif comment_highlight:
