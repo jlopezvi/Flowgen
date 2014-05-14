@@ -1,10 +1,11 @@
 @startuml
 
 start
-:#yellow:do VINCIA parton shower;
-:1) prepare system of partons;
-:2) do phase 1 of shower;
-:3)...;
+ skinparam activityBackgroundColor #84add6 
+:#84add6:do VINCIA parton shower;
+:#b2cce5:1) prepare system of partons;
+:#b2cce5:2) do phase 1 of shower;
+:#b2cce5:3)...;
 
 stop
 

@@ -17,27 +17,29 @@ FLOWDBS:= $(FLOWDBS_FROMCCSOURCEFILES:.cpp=.flowdb) flowdoc/aux_files/simple_dem
 #	@echo "txt-to-html: processing $^ to make $@ (remember to also make pngs)"
 #	@echo execute txt-to-html-converter
     
-#flowdoc/simple_demo_src.html : simple_demo_src.cpp test.py
+#flowdoc/simple_demo_src.html : simple_demo_src.cpp makeflows.py
 #	@echo "a"
 
 all: flowdoc
 
-flowdoc/aux_files/%.flowdb : src/%.cpp simple_demo_src.cpp pretest.py
+flowdoc/aux_files/%.flowdb : src/%.cpp simple_demo_src.cpp build_db.py
 	@echo "cpp-to-flowdb: preprocessing"
-	python3 pretest.py simple_demo_src.cpp
-	python3 pretest.py $^
+	python3 build_db.py simple_demo_src.cpp
+	python3 build_db.py $^
 		
-flowdoc/aux_files/.runphase: $(CCSOURCEFILES) simple_demo_src.cpp test.py
+flowdoc/aux_files/runphase: $(CCSOURCEFILES) simple_demo_src.cpp makeflows.py
 	@echo "cpp-to-graphs: depends on $^"
-	python3 test.py simple_demo_src.cpp
-	python3 test.py $^
+	python3 makeflows.py simple_demo_src.cpp
+	python3 makeflows.py $^
 	cd flowdoc/aux_files && java -jar plantuml.jar *.txt
-	cat <<EOF > flowdoc/aux_files/.runphase
+	cat <<EOF > flowdoc/aux_files/runphase
 	
-flowdoc/%.html : flowdoc/aux_files/%.flowdb posttest.py flowdoc/aux_files/.runphase
+flowdoc/%.html : flowdoc/aux_files/%.flowdb makehtml.py flowdoc/aux_files/runphase
 	@echo "to-html: processing $^ to make $@"
-	python3 posttest.py $^
+	python3 makehtml.py simple_demo_src.cpp
+	python3 makehtml.py $^
 			
-flowdoc: simple_demo_src.cpp src/*.cpp $(FLOWDBS) $(FLOWHTML) Makefile flowdoc/aux_files/.runphase 
+flowdoc: simple_demo_src.cpp src/*.cpp $(FLOWDBS) $(FLOWHTML) Makefile flowdoc/aux_files/runphase 
 	@echo "Hopla! Finished flowdoc creation. Check flowdocs."
+	
 	
