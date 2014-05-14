@@ -38,13 +38,35 @@
   
     <div class="section"><h2>IF Statements<a name="Functions/Methods"></a></h2>
     <p>
-    IF-statement bifurcations in the flow should be shown in the diagram either when there are annotated actions inside or when we have 'highlighted/underlined' the if-statement with the <b>//$</b> notation. 
-    We can add user-defined conditions before or after the if- elseif- else- statements. We can also quote the calls to functions/methods in the conditions. Finally, there are zooming options.
+    <tt>if</tt>-statement bifurcations in the flow are shown in the diagram when there are annotated actions inside. 
+    We can add user-defined conditions preceding or succeeding (<font color=red>not implemented</font>) the if- elseif- statements. We can also highlight the calls to functions/methods in the conditions <font color=red>[not implemented]</font>. Finally, there are zooming options <font color=red>[not implemented]</font>.
     </p>
 
     <div class="section"><h3>annotation<a name="annotation"></a></h3>
+      <p>
+      a) preceding annotations:      
+      </p>
+      <p>
+      <div class="source"><pre>
+      <font color="darkgreen">//$ [condition A]</font>      
+      if(conditionStatement) {  <font color="lightgreen"> //$</font>
+      //$ action 1
+      code
+      //$ action 2           
+      code
+      }
+      <font color="darkgreen">//$ [condition B]</font>
+      else if(conditionStatement) {  <font color="lightgreen">//$</font>
+      //$ action 3
+      code
+      }
+      else{
+      code
+      }
+      </pre></div>
+      </p>
       <p> 
-      a) comments after:
+      b) succeeding annotations (<font color=red>not implemented</font>):
       </p> 
       <p>  
       <div class="source"><pre>
@@ -63,31 +85,7 @@
       code
       }
       else                                  
-      <font color="darkgreen">//$ [condition C]</font>
       {
-      code
-      }
-      </pre></div>
-      </p>
-      <p>
-      a) comments before:      
-      </p>
-      <p>
-      <div class="source"><pre>
-      <font color="darkgreen">//$ [condition A]</font>      
-      if(conditionStatement) {  <font color="lightgreen"> //$</font>
-      //$ action 1
-      code
-      //$ action 2           
-      code
-      }
-      <font color="darkgreen">//$ [condition B]</font>
-      else if(conditionStatement) {  <font color="lightgreen">//$</font>
-      //$ action 3
-      code
-      }
-      <font color="darkgreen">//$ [condition C]</font>
-      else{
       code
       }
       </pre></div>
@@ -96,20 +94,23 @@
       <font color="lightgreen">//$</font>:  forces displaying in the diagram the calls to functions/methods inside the conditionStatement<br>
       <font color="darkgreen">//$  [condition A]</font>:  specifies the condition; the square brackets [ ] are required syntax
       </p>
+      
     </div>
 
     <div class="section"><h3>representation in the diagram<a name="representation"></a></h3>
       <p>
-      <img src="images/IFstatement.jpg" alt="figure" width=300>
+      <img src="images/example_IFstatement.png" alt="figure" width=300>
       </p>
       <p>
       <ul>
       <li>When there is (at least) an action in any of the conditional paths, the whole IF-diagram will be drawn at the corresponding zoom level, including the ‘else’ path (whether this one is written in the code or not). 
-      <li>The comments specifying the conditions are optional. They will also drive the drawing of the IF-diagram, in a secondary basis.
-      <li>The conditions that are not specified will be taken from the code. In particular, the default condition for the ‘else’ conditional path is [else].
+      <li>The comments specifying the conditions are optional.
+      <li>The conditions that are not specified will be taken from the code. In particular, the default condition for the ‘else’ conditional path is [no].
       </ul>      
       </p>
       <div class="section"><h5>calls to functions/methods in the conditionStatements<a name=""></a></h5>
+      <font color=red>[not implemented]</font>
+      <br>
       When the condition(s) involve a call(s) to a method/function, these will be shown as actionable hyperlinks, provided that there exists the relevant diagram(s):
       <ul>
       <li> conditionStatement read directly from the code: always shown. Example: <br>
@@ -126,34 +127,30 @@
     </p>
 
       <div class="source"><pre>
-      void activity_function(int a){
-      
-      int c=2;
-      //$ [condition A]
-      if(a>0) {
-      //$ action 1
-      std::cout<<"do 1"<< endl;
-        //$ [condition A.1]
-        if (a>c)            
-        {
-        //$ action 4
-        std::cout<<"do 4"<< endl;
-        }
-      }
-      //$ [condition B]
-      else if(a==-1) {
-      //$ action 3
-      std::cout<<"do 3"<< endl;
-      }
-      //$ [condition C]
-      else {
-      std::cout<<"do nothing"<< endl;
-      }
-      
-      return;
-      }
+using namespace std;
 
-      <img src="images/nestedIFstatements.jpg" alt="figure" width=400>
+void activity_function(int a){
+int c=2;
+if(a>0) {
+   //$ action 1
+   cout<<"do 1"<< endl;
+   //$ [subcondition for true]
+   if (a>c)
+   {
+//$ action 4
+     cout<<"do 4"<< endl;
+} }
+//$ [subcondition for false]
+else if(a==-1) {
+//$ action 3
+    cout<<"do 3"<< endl;
+}
+else {
+cout<<"do nothing"<< endl;
+}
+return;
+}
+      <img src="images/example_nestedIFstatements.png" alt="figure" width=500>
 
       </pre></div>
     </div>

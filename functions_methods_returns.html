@@ -37,8 +37,7 @@
   
     <div class="section"><h2>Returns (Functions / Class Methods)<a name="Functions/Methods"></a></h2>
     <p>
-    <font color=#900>The returns inside a function / class method should be picked up automatically, without the need for annotations </font>. Annotations can be used to further specify the return value.
-
+    The return statements inside a function / class method are identified automatically, without the need for annotations. Annotations preceding return statements allow the return value to be specified in a human-readable way <font color=red>[not implemented]</font>. 
     </p>
 
     <div class="section"><h3>annotation (Optional)<a name="annotation"></a></h3>
@@ -46,11 +45,9 @@
         <pre>
         ...
         //$ last action
-        
         CODE
-        
-        <font color="green">//$ [user-defined return value] </font>
-        return value;
+        //$ [return value]
+        return xVar;
         ...
         </pre>
            
@@ -59,18 +56,18 @@
 
     <div class="section"><h3>representation in the diagram<a name="representation"></a></h3>
     <p>
-    a) the <b>return</b> is in the main flow of actions <br>
+    a) the <tt>return</tt> is in the main flow of actions <br>
     </p>
-      <img src="images/return_main.jpg" alt="figure" width=200>
+      <img src="images/example_return.png" alt="figure" width=200>
 	<br>
-	b) the <b>return</b> is inside a non-annotated IF-statement or loop. <br>
+	b) the <tt>return</tt> is inside a non-annotated IF-statement or loop. <br>
 	<br>
 	<em>[The arrow is dashed, curved and comes from the action that contains the return statement.]</em>
 	<br>
 	<br>
 	<br>
 	<p>
-	In general, the <b>returns</b> have zoom level 0.
+	In general, the return statements have zoom level 0.
 	</p>
 
     </div>

@@ -36,7 +36,7 @@
   
     <div class="section"><h2>zooming (actions)<a name="zooming"></a></h2>
     <p>
-      Some actions are primary and some other secondary. There is a zooming option to indicate it.
+      The programmer can indicate at which level of detail a description of an action should appear by adding an integer immediately after the opening ‘//$’ of an annotation. Higher numbers indicate a finer level of detail; the zoom level is 0 by default, corresponding to the coarsest level of detail. This makes different zoom levels possible in visualizing the HTML output. <font color=red>[implemented zoom levels 0-1]</font>
     </p>
 
     <div class="section"><h3>annotation<a name="annotation"></a></h3>
@@ -44,7 +44,7 @@
       <div class="source"><pre>
 ...
 //$<font color="green">0</font> action 1
-code [note: undocumented in the detailed zoom]
+code
 //$1 action 1.1
 code
 //$1 action 1.2
@@ -64,7 +64,7 @@ code
       <img src="images/outer_zoom.jpg" name="im6" width=300 height=500 border="0" alt="picture" />
       </a>
       </p><p>
-      Note: try mouse over. This is the website visualization. In the tool, zooming could be on mouse click. 
+      Note: Try mouse over. This is a website visualization. In Flowgen, interactive zooming could be performed on mouse click. <font color=red>[The present zooming visualization is not interactive: all different zoom levels are displayed in the corresponding HTML file]</font> 
       </p>
     </div>
 
@@ -93,17 +93,19 @@ return 0;
       <img src="images/outer_zoom.jpg" name="im7" width=300 height=500 border="0" alt="picture" />
       </a>
       <br><br>
-      Note: try mouse over. This is the website visualization. In the tool, zooming could be on mouse click. 
+      Note: Try mouse over. This is a website visualization. In Flowgen, interactive zooming could be performed on mouse click. <font color=red>[The present zooming visualization is not interactive: all different zoom levels are displayed in the corresponding HTML file]</font> 
       
      </div>
     
-     <div class="section"><h3>operational implementation<a name="implementation"></a></h3>
+     <div class="section"><h3>operational implementation of interactive zooming visualization<a name="implementation"></a></h3>
       <p>
+      <font color=red>[not implemented]</font> 
+      <br>
       A full diagram will contain in general several zoomable sections. For each of these sections, a certain zoom level choice gets assigned a certain code. Hence, a particular instance of a full diagram, as selected by the user, will contain a unique combination of these codes. Hyperlinks will connect among different instances (code combinations) of the same full diagram. Either:
       <br>
       1) The GUI browser sends a message to the diagram constructor to tell the latter what diagram exactly we want to see. REAL-TIME GENERATION (can save memory / space / time)
       <br>
-      2) All possible diagrams are built beforehand. OFF-LINE GENERATION.
+      2) All possible diagrams are built beforehand. OFF-LINE GENERATION.  
 
       </p>
     </div>

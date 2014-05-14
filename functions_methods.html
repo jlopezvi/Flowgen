@@ -36,7 +36,9 @@
   
     <div class="section"><h2>Functions / Class Methods<a name="Functions/Methods"></a></h2>
     <p>
-      A set of actions is called an <em>activity</em> and can be depicted as a diagram, where the actions are the nodes. Functions and class methods perform activities and each is thus associated to a certain diagram.
+      A sequence of actions builds up an <em>activity</em>. An activity may include different flow paths. An activity has a beginning and an end. In UML activity diagrams, these are indicated by special round symbols. Conditional branches are indicated by diamond-shaped elements.
+      <br><br>
+      In the code, activities are annotated functions or methods, for example the C++ main() function. (Flowgen’s annotation grammar recognizes Doxygen annotations of functions or methods. This feature will eventually allow their use as additional comments in Flowgen activity diagrams.) The actions are specified in the source code by the programmer. The beginning and end of the full activity to which the action belongs are determined by the code itself, as are the different flow paths within the activity.
     </p>
 
     <div class="section"><h3>annotation<a name="annotation"></a></h3>
@@ -65,7 +67,7 @@
       <p>
       <img src="images/activity.jpg" alt="fig_activity" width=300>
       </p>
-      <font color=#900> The full name of the method / function has to be retrieved by a C++ parser or equivalent. </font>
+      <font color=red>[Frame not implemented. Figures done with UMLet (www.umlet.com).]</font>
     </div>
 
     <div class="section"><h3>examples<a name="examples"></a></h3>

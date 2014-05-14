@@ -36,7 +36,11 @@
   
     <div class="section"><h2>actions<a name="actions"></a></h2>
     <p>
-      Actions are the basic elements of a flowchart (activity diagram), the building blocks. They are found within object methods or functions. Each action annotation refers to several lines of the code written below, basically until the next action annotation, or a relevant flow bifurcation.
+      The basic building blocks of an activity diagram (or flowchart) are <em>actions</em>, each a statement or sequence of statements in the code. Each action conceptually accomplishes a discrete task. A sequence of actions builds up an <em>activity</em>.
+
+      The actions, along with the level of detail to which they correspond (zoom level), are specified in the source code by the programmer.
+      <br><br>
+      Annotations describing actions are the key added elements that allow Flowgen to generate a rich description. An annotation specifies what succeeding lines of code (up to the next annotation or an annotated flow-control structure) are doing. The added ‘$’ distinguishes an annotation from a regular C++ comment, allowing the programmer to choose explicitly what appears in the activity diagrams.
     </p>
 
     <div class="section"><h3>annotation<a name="annotation"></a></h3>
@@ -52,12 +56,12 @@
 
     <div class="section"><h3>representation in the diagram<a name="representation"></a></h3>
       <p>
-      <img src="images/fig_action.png" alt="fig_action" width=300>
+      <img src="images/example_action_cut.png" alt="example_action_cut" width=300>
       </p>
       <p>
-      *width of the text before line return: a configurable option of the system (impacts on the aesthetics).
+      *width of the text before line return: a configurable option of the system <font color=red>[not implemented]</font>.
       <br>
-      See also Actions_modifiers.
+      See also <a href="actions_modifiers.html">Action_modifiers</a>.
       </p>
     </div>
 
@@ -79,7 +83,7 @@ std::cout << "do 2"<< endl;
 
 return 0;
 }
-      <img src="images/fig_action.png" alt="fig_action" width=300>
+      <img src="images/example_action_cut.png" alt="example_action_cut" width=300>
 
       </pre></div>
       <div class="source"><pre>
@@ -96,7 +100,7 @@ std::cout << "do 2"<< endl;
 
 return 0;
 }
-      <img src="images/fig_action.png" alt="fig_action" width=300>
+      <img src="images/example_action_cut.png" alt="example_action_cut" width=300>
       </pre></div>
 
 
@@ -115,7 +119,7 @@ std::cout << "do 2"<< endl;
 
 return 0;
 }
-      <img src="images/fig_action_example_severalactions.png" alt="fig_action" width=150>
+      <img src="images/example_actions_cut.png" alt="example_actions_cut" width=150>
       </pre></div>
 
 </div>

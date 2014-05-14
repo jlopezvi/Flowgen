@@ -37,7 +37,9 @@
   
     <div class="section"><h2>Calls to functions / class methods<a name="Functions/Methods"></a></h2>
     <p>
-      Oftentimes, important actions are performed in calls to other functions or class methods. We can underline / highlight these calls and make them appear in the diagram by using the pattern <b>//$</b> at the end of a code line. We could further distinguish when a certain action <em>uses</em> a call(s) or when this action <em>is</em> actually performed entirely within a call.
+      Oftentimes, important actions are performed by calls to other functions or class methods. We can highlight these calls and make them appear in the diagram by using a postfix annotation <tt>//$</tt> at the end of a code line. This annotation also inserts a hyperlink to the diagrams for the functions or methods. This allows a developer to browse from the caller’s diagram to the called function’s diagram.
+      <br><br>
+      <font color=red>[not implemented]</font> We could further distinguish when a certain action <em>uses</em> a call(s) or when this action <em>is</em> actually performed entirely within a call.
     </p>
 
     <div class="section"><h3>annotation<a name="annotation"></a></h3>
@@ -55,7 +57,7 @@
       </pre></div>
       </p>
       <p>
-      <u>Note</u>: one should still be able to add a ‘normal’ comment (not belonging to the diagrams) after the <b>//$</b> structure, with the syntax <b>//comment</b>
+      <u>Note</u>: it is possible to add a ‘normal’ comment, <tt>//comment</tt>, (not relevant to the diagrams) after the <tt>//$</tt> postfix.
       </p>
     </div>
 
