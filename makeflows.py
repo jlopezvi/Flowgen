@@ -7,7 +7,12 @@ import glob
 import csv
 
 #colors:  http://www.color-hex.com/color/6699cc#    chosen (#84add6, #b2cce5, #e0eaf4)
- 
+
+##RESTRICTIONS:
+#- parallel actions cannot be nested
+#- parallel actions only work at the highest zoom, level 0
+#- only one nested if statement inside another one.
+
 #clang node types (CursorKind)
 #21: CXX_METHOD
 #205: if statement
@@ -246,8 +251,7 @@ def find_ifstmt(nodeIN):
       if d.kind.value==205:
         ifbeginlineArrayIN.append(d.extent.start.line)
         ifendlineArrayIN.append(d.extent.end.line)
-        ifnodeArrayIN.append(d)
-        return               
+        ifnodeArrayIN.append(d)               
       else:        
   	    find_ifstmtRE(d)        
   find_ifstmtRE(nodeIN)
@@ -294,13 +298,16 @@ def find_elsestmt(nodeIN):
 #main process function
 def process_find_functions(node):
 
-    #\s --> [ \t\r\f\v] : avoids newlines \n    
-    regextextActionComment=r'^\s*//\$(?!\s+\[)\s+(?P<action>.+)$'
+    #\s --> [ \t\r\f\v] : avoids newlines \n 
+    # (?! ): negative lookahead
+    # ()?: optional group
+    regextextActionComment=r'^\s*//\$(?!\s+\[)(\s+(?P<tag><\w+>))?\s+(?P<action>.+)$'
     regextextActionComment1=r'^\s*//\$1(?!\s+\[)\s+(?P<action>.+)$'
     regextextAnyActionComment1=r'^\s*//\$1?(?!\s+\[)\s+(?P<action>.+)$'
     regexActionComment = re.compile(regextextActionComment)
     regexActionComment1 = re.compile(regextextActionComment1)
     regexAnyActionCommentZoomArray = [regexActionComment, re.compile(regextextAnyActionComment1)]
+       #anycomment_previousline = regexAnyActionCommentZoomArray[zoom].match(enum_file[i-1-1][1])
     regexContextualComment = re.compile(r'^\s*//\$\s+\[(?P<condition>.+)\]\s*$')
     regexHighlightComment = re.compile(r'^\s*(?P<commandline>.+?)\s+//\$\s*(?:$|//.+$)') 
     regexIf = re.compile(r'^\s*if\s*\((?P<condition>.*)\)\s*{?\s*(?:$|//.*$)')
@@ -332,6 +339,7 @@ def process_find_functions(node):
       print ('Found %s of kind %s [start_line=%s, end_line=%s. At "%s"]' % (
                                             node.spelling, node.kind.name , node.extent.start.line, node.extent.end.line, node.location.file))
 
+      #TO DO: zoom loop generates all possible zoom levels. Instead, only relevant zoom for each diagram should be generated. 
       zoom_str_Array=['','1']
       for zoom in range(0,2):
                     
@@ -346,27 +354,35 @@ def process_find_functions(node):
 
         #find if statements inside the function     
         ifbeginlineArray, ifendlineArray, ifnodeArray = find_ifstmt(node)        
+        print (ifbeginlineArray, ifendlineArray, ifnodeArray)
         
-        #variables for conditional statements ('Local' means nested inside another conditional statement)
+        #variables for conditional statements ('Nested' means nested inside another conditional statement)
         elseifbeginlineArray=[]
-        elsebeginline=None          
-        ifbeginlineLocalArray=[]
-        ifendlineLocalArray=[]
-        ifnodeLocalArray=[]
-        elseifbeginlineLocalArray=[]
-        elsebeginlineLocal=None 
+        elsebeginline=None 
+        ifstructurenodeArray=[]         
+        ifbeginlineNestedArray=[]
+        ifendlineNestedArray=[]
+        ifnodeNestedArray=[]
+        elseifbeginlineNestedArray=[]
+        elsebeginlineNested=None 
+        ifstructurenodeNestedArray=[]
         endifWrite = False
-        endifLocalWrite = False
+        endifNestedWrite = False
         elseifNum = 0
-        elseifNumLocal = 0
+        elseifNumNested = 0
         IdxIfbeginlineArray = None
-        IdxIfbeginlineArrayLocal = None
+        IdxIfbeginlineArrayNested = None
         
         #find return statements inside the function
         #returnlineArray = find_returnstmt(node,zoom)
         returnlineArray, returnTypeArray=find_returnstmt(node,zoom)
         
         #other variables
+        #TO DO: use depthlevel
+        depthlevel=0
+        #flagparallelactions=(flag TRUE/FALSE,depthlevel)
+        #TO DO: change array for another more transparent structure, like an object with attributes
+        flagparallelactions=[False,0]
         lastcommentlinematched=0
         tab='   '
         indentation_level=0
@@ -374,25 +390,61 @@ def process_find_functions(node):
         string_notes=''
         string=''
         inside_comment=False
-        actioncallsdefArray=[]               
+        actioncallsdefArray=[]
+        action_zoomlevel=None               
         
+        
+        def increase_depthlevel():
+           nonlocal depthlevel
+           depthlevel+=1
+           write_last_comment(action_zoomlevel)
+           return 
+
+        def decrease_depthlevel():
+           nonlocal flagparallelactions, depthlevel, string, indentation_level
+           depthlevel-=1
+           write_last_comment(action_zoomlevel)
+           #if activated parallelflag
+           if flagparallelactions[0]==True and depthlevel==flagparallelactions[1]:
+              string+= indentation_level*tab+'end fork\n' 
+              flagparallelactions[0]=False
+              flagparallelactions[1]=None 
+           return        
+
         
         def add_note(stringIN):
            nonlocal string_notes
-           string_notes+=stringIN+'\n'                   
-
-        def write_last_comment():
+           string_notes+=stringIN+'\n'
+           return                   
+        
+        #taken from http://stackoverflow.com/questions/2657693/insert-a-newline-character-every-64-characters-using-python           
+        #def insert_newlines(string, every=75):
+        #    lines = []
+        #    for i in range(0, len(string), every):
+        #       lines.append(string[i:i+every])
+        #    return '\n'.join(lines)     
+        
+        def color(zoomlevel_IN):
+           if zoomlevel_IN==0:
+              return ':#84add6:'
+           elif zoomlevel_IN==1:
+              return ':#b2cce5:'
+                           
+        def write_last_comment(action_zoomlevel):
            nonlocal string_notes
            nonlocal string
            nonlocal last_comment_str
            nonlocal inside_comment
            nonlocal actioncallsdefArray
-           if inside_comment:
+           if inside_comment:              
+              #last_comment_str=insert_newlines(last_comment_str)
+              #write action comment
+              last_comment_str=indentation_level*tab+color(action_zoomlevel)+last_comment_str+';\n'   
               if actioncallsdefArray:
                  last_comment_str=last_comment_str[:-2]+"\\n--------\\n"
                  for it7 in actioncallsdefArray:
-                    print('LOOKING IF CALLS EXIST:',it5.kind.name, it5.get_definition(),it5.location)
-                    if read_flowdbs(it5.get_usr().decode("utf8")):
+                    print('LOOKING IF CALLS EXIST:',it7.kind.name, it7.get_definition(),it7.location)
+                    if read_flowdbs(it7.get_usr().decode("utf8")):
                       call_in_filename_str=read_flowdbs.file+'.html'
                       usr_id_str= str(it7.get_usr().decode("utf-8"))
                       usr_id_str = ''.join(e for e in usr_id_str if e.isalnum())
@@ -410,19 +462,20 @@ def process_find_functions(node):
               string_notes=""
               actioncallsdefArray=[]
            return
+           
+ 
+        #Functions for the if statements.
+        #TO DO: reuse parent-if-statement functions as nested-if-statement functions
         
-        string+='@startuml\n\nstart\n skinparam activityBackgroundColor #84add6 \n'
-        
-        #main loop over source code lines
-        for i, line in enum_file:
-          if i in range(start_line,end_line):
-              #### 
-             
-              if i in ifbeginlineArray:
+        def ifbeginlineArray_method():
+                 nonlocal elseifbeginlineArray, elsebeginline, ifstructurenodeArray
+                 nonlocal ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray
+                 nonlocal string, indentation_level, depthlevel
+                 nonlocal endifWrite, IdxIfbeginlineArray           
                  #look for comment inside if statement
                  IdxIfbeginlineArray=ifbeginlineArray.index(i)
                  comment_inside_ifstmt = False
-                 for h,lineB in enum_file:
+                 for h,lineB in enum_file:                   
                     if h in range(i,ifendlineArray[IdxIfbeginlineArray]):
                       commentB = regexAnyActionCommentZoomArray[zoom].match(lineB)
                       if commentB:
@@ -430,8 +483,8 @@ def process_find_functions(node):
                         break
                  #if comment inside if statement:
                  if comment_inside_ifstmt == True :
-                    #write last comment in string
-                    write_last_comment()
+                    #increase depthlevel
+                    increase_depthlevel()
                     #write 'if' in string
                     ifstmt=regexIf.match(line)
                     if ifstmt:
@@ -448,14 +501,16 @@ def process_find_functions(node):
                     indentation_level+=1
                     #explore substructure: then / else if/ else: elseifbeginlineArray, elsebeginline, ifstructurenodeArray
                     elseifbeginlineArray, elsebeginline, ifstructurenodeArray = find_elsestmt(ifnodeArray[IdxIfbeginlineArray])                  
-                    #explore then and update ifbeginlineLocalArray, ifendlineLocalArray, ifnodeLocalArray 
-                    ifbeginlineLocalArray, ifendlineLocalArray, ifnodeLocalArray = find_ifstmt(ifstructurenodeArray[0])               
-
-              #if i in elseifbeginlineArray
-              elif i in elseifbeginlineArray:
+                    #explore then and update ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray 
+                    ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray = find_ifstmt(ifstructurenodeArray[0])               
+                 return
+        
+        def elseifbeginlineArray_method():  
+                 nonlocal ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray
+                 nonlocal elseifNum, string, indentation_level                     
+                 decrease_depthlevel()
+                 increase_depthlevel()
                  elseifNum+=1
-                 #write last comment
-                 write_last_comment()
                  #write 'else if' in string
                  elseifstmt=regexElseIf.match(line)
                  if elseifstmt:
@@ -468,22 +523,25 @@ def process_find_functions(node):
                    print ('Error: condition not picked up at line', line) 
                    string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+'Error: unknown condition'+') then (yes)'+'\n'                    
                  indentation_level+=1              
-                 #explore elseif and update ifbeginlineLocalArray, ifendlineLocalArray, ifnodeLocalArray
-                 ifbeginlineLocalArray, ifendlineLocalArray, ifnodeLocalArray = find_ifstmt(ifstructurenodeArray[elseifNum]) 
-  
-              #if i in elsebeginline
-              elif i == elsebeginline:
-                 #write last comment
-                 write_last_comment()
+                 #explore elseif and update ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray
+                 ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray = find_ifstmt(ifstructurenodeArray[elseifNum]) 
+                 return
+                 
+        def elsebeginline_method():  
+                 nonlocal ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray
+                 nonlocal string, indentation_level
+                 decrease_depthlevel()
+                 increase_depthlevel()
                  #write 'else' in string
                  string+= (indentation_level-1)*tab+'else(no)'+'\n' 
-                 #explore else and update ifbeginlineLocalArray, ifendlineLocalArray, ifnodeLocalArray
-                 ifbeginlineLocalArray, ifendlineLocalArray, ifnodeLocalArray = find_ifstmt(ifstructurenodeArray[-1]) 
-
-              #if i is ifendlineArray[IdxIfbeginlineArray] and }'s marked to be written in string:
-              elif endifWrite and (i == ifendlineArray[IdxIfbeginlineArray]): 
-                   #write last comment
-                   write_last_comment()
+                 #explore else and update ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray
+                 ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray = find_ifstmt(ifstructurenodeArray[-1]) 
+                 return    
+                 
+        def ifendlineArray_method():
+                   nonlocal string, indentation_level, depthlevel
+                   nonlocal endifWrite, elsebeginline,elseifNum
+                   decrease_depthlevel()                   
                    #is the else condition explicitly written? Otherwise write now
                    if elsebeginline==None:
                       string+= (indentation_level-1)*tab+'else(no)'+'\n'
@@ -495,26 +553,29 @@ def process_find_functions(node):
                    indentation_level-=1
                    
                    #reset all variables
+                   depthlevel-=1
                    endifWrite = False
                    elseifNum = 0
                    del elseifbeginlineArray[:]
                    elsebeginline=None
-              
-              ####
-              elif i in ifbeginlineLocalArray:
-                 #look for comment inside Local if statement
-                 IdxIfbeginlineArrayLocal=ifbeginlineLocalArray.index(i)
+                   return
+        ##
+        def ifbeginlineNestedArray_method():
+                 nonlocal IdxIfbeginlineArrayNested, string, indentation_level, depthlevel, endifNestedWrite
+                 nonlocal elseifbeginlineNestedArray, elsebeginlineNested, ifstructurenodeNestedArray                 
+                 #look for comment inside Nested if statement
+                 IdxIfbeginlineArrayNested=ifbeginlineNestedArray.index(i)
                  comment_inside_ifstmt = False
                  for h,lineB in enum_file:
-                    if h in range(i,ifendlineLocalArray[IdxIfbeginlineArrayLocal]):
+                    if h in range(i,ifendlineNestedArray[IdxIfbeginlineArrayNested]):
                       commentB = regexAnyActionCommentZoomArray[zoom].match(lineB)
                       if commentB:
                         comment_inside_ifstmt = True
                         break
-                 #if comment inside Local if statement:
+                 #if comment inside Nested if statement:
                  if comment_inside_ifstmt == True :
-                    #write last comment
-                    write_last_comment()
+                    #increase depthlevel
+                    increase_depthlevel()
                     #write 'if' in string
                     ifstmt=regexIf.match(line)
                     if ifstmt:
@@ -526,17 +587,18 @@ def process_find_functions(node):
                     else:
                       print ('Error: condition not picked up at line', line) 
                       string+= '\n'+ indentation_level*tab + 'if ('+'Error: unknown condition'+') then(yes)''\n'                     
-                    #mark } Local endif to be written in string
-                    endifLocalWrite=True
+                    #mark } Nested endif to be written in string
+                    endifNestedWrite=True
                     indentation_level+=1
-                    #explore substructure: then / else if/ else: elseifbeginlineLocalArray, elsebeginlineLocal, ifstructurenodeLocalArray
-                    elseifbeginlineLocalArray, elsebeginlineLocal, ifstructurenodeLocalArray = find_elsestmt(ifnodeLocalArray[IdxIfbeginlineArrayLocal])                  
-               
-              #if i in elseifbeginlineLocalArray
-              elif i in elseifbeginlineLocalArray:
-                 elseifNumLocal+=1
-                 #write last comment
-                 write_last_comment()
+                    #explore substructure: then / else if/ else: elseifbeginlineNestedArray, elsebeginlineNested, ifstructurenodeNestedArray
+                    elseifbeginlineNestedArray, elsebeginlineNested, ifstructurenodeNestedArray = find_elsestmt(ifnodeNestedArray[IdxIfbeginlineArrayNested])
+                 return                  
+   
+        def elseifbeginlineNestedArray_method():
+                 nonlocal string, indentation_level, elseifNumNested 
+                 elseifNumNested+=1
+                 decrease_depthlevel()
+                 increase_depthlevel()
                  #write 'else if' in string
                  elseifstmt=regexElseIf.match(line)
                  if elseifstmt:
@@ -548,83 +610,145 @@ def process_find_functions(node):
                  else:
                    print ('Error: condition not picked up at line', line) 
                    string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+'Error: unknown condition'+') then (yes)'+'\n'                    
-                 indentation_level+=1              
-              
-              #if i in elsebeginlineLocal
-              elif i == elsebeginlineLocal:
-                 #write last comment
-                 write_last_comment()
+                 indentation_level+=1  
+                 return        
+         
+        def elsebeginlineNested_method():
+                 nonlocal string, indentation_level
+                 decrease_depthlevel()
+                 increase_depthlevel()
                  #write 'else' in string
                  string+= (indentation_level-1)*tab+'else(no)'+'\n' 
-
-              #if i is ifendlineLocalArray[IdxIfbeginlineArrayLocal] and }'s marked to be written in string:
-              elif endifLocalWrite and (i == ifendlineLocalArray[IdxIfbeginlineArrayLocal]): 
-                   #write last comment
-                   write_last_comment()
+                 return        
+        
+        def ifendlineNestedArray_method():
+                   nonlocal string, indentation_level, depthlevel
+                   nonlocal endifNestedWrite, elsebeginlineNested, elseifNumNested
+                   decrease_depthlevel()
                    #is the else condition explicitly written? Otherwise write now
-                   if elsebeginlineLocal==None:
+                   if elsebeginlineNested==None:
                       string+= (indentation_level-1)*tab+'else(no)'+'\n' 
                    #write endif's in string
-                   for n in range(elseifNumLocal):
+                   for n in range(elseifNumNested):
                       string+= (indentation_level-1)*tab+'endif'+'\n'
                       indentation_level-=1
                    string+= (indentation_level-1)*tab+'endif'+'\n'+'\n'
                    indentation_level-=1
                    
                    #reset all variables
-                   endifLocalWrite = False
-                   elseifNumLocal = 0
-                   del elseifbeginlineLocalArray[:]
-                   elsebeginlineLocal=None              
-              
-              #elif i in returnlineArray:
-              elif i in returnlineArray:
-                 if returnTypeArray[returnlineArray.index(i)] == True:
-                    #write last comment in string
-                    write_last_comment()
-                    string+= "\nstop\n"
-                 if returnTypeArray[returnlineArray.index(i)] == False:
-                    add_note("possible STOP")
-
-                   
-              ####  comments
-              else:
-                anycomment = regexAnyActionCommentZoomArray[zoom].match(line)
-                comment_highlight = regexHighlightComment.match(line)
-                if anycomment:
+                   depthlevel-=1
+                   endifNestedWrite = False
+                   elseifNumNested = 0
+                   del elseifbeginlineNestedArray[:]
+                   elsebeginlineNested=None 
+                   return         
+        
+                                                          
+        string+='@startuml\n\nstart\n skinparam activityBackgroundColor #84add6 \n'
+        
+        #main loop over source code lines
+        #TO DO: optimization
+        for i, line in enum_file:
+          if i in range(start_line,end_line):
+          
+             anycomment = regexAnyActionCommentZoomArray[zoom].match(line)
+             comment_highlight = regexHighlightComment.match(line)
+             #actions
+             if anycomment:
+                      #this line continues a previous multi-line action annotation
                       if lastcommentlinematched == i-1:
-                         last_comment_str=last_comment_str[:-2]+' '+anycomment.group('action')+';\n'
+                         last_comment_str=last_comment_str+'\\n'+anycomment.group('action')
+                      #first line of action annotation
                       else:
-                         #write last comment
-                         write_last_comment()
-                         #new comment
+                         write_last_comment(action_zoomlevel)
+                         #new comment, with specification of zoom                         
                          inside_comment=True
                          comment = regexActionComment.match(line)
                          comment1 = regexActionComment1.match(line)
                          if comment:
-                            last_comment_str+= indentation_level*tab +':#84add6:'+comment.group('action')+';\n'
+                            action_zoomlevel=0
+                            #if <parallel>
+                            #TO DO combine parallel and if statements. paralell inside parallel
+                            if comment.group('tag'):
+                               if comment.group('tag')=="<parallel>":
+                                  #if begin of parallel actions:
+                                  if flagparallelactions[0]==False:
+                                     string+= indentation_level*tab+'fork\n'
+                                     flagparallelactions[0]=True
+                                     flagparallelactions[1]=depthlevel
+                                  #else
+                                  else:
+                                     if depthlevel==flagparallelactions[1]:
+                                        string+= indentation_level*tab+'fork again\n'
+                            #if not <parallel> but activated parallelflag
+                            else:
+                               if flagparallelactions[0]==True and depthlevel==flagparallelactions[1]:
+                                  string+= indentation_level*tab+'end fork\n' 
+                                  flagparallelactions[0]=False
+                                  flagparallelactions[1]=None 
+                            #add line to current action annotation
+                            last_comment_str+= comment.group('action')
                          elif comment1:
-                            last_comment_str+= indentation_level*tab +':#b2cce5:'+comment1.group('action')+';\n'
-                      lastcommentlinematched = i            
-
-                elif comment_highlight:
-                    print ('line',i)
-
+                            action_zoomlevel=1
+                            last_comment_str+= comment1.group('action')
+                      lastcommentlinematched = i 
+             
+             else:
+             
+                #  calls,...
+                if comment_highlight:
                     scan_column_start=1+comment_highlight.start('commandline')
                     #the end character is -1. There is an offset of +1 with respect to the file
                     scan_column_end=1+comment_highlight.end('commandline')-1
                     scan_file= infile_clang
                     scan_line=i
-                    print (scan_file,scan_line,scan_column_start,scan_column_end)
+                    print ('CALLS: ',scan_file,scan_line,scan_column_start,scan_column_end)
                     singlelinecallsdefArray = find_calls(scan_file,scan_line,scan_column_start,scan_column_end)
                     #for it4 in singlelinecallsdefArray:
                        #print ('singlelinecallsdefArray',it4.displayname.decode("utf-8"))
                     for it5 in singlelinecallsdefArray:
                        if it5 not in actioncallsdefArray:
-                          actioncallsdefArray.append(it5)                             
+                          actioncallsdefArray.append(it5)
+          
+                #### ...,OR if statements,...             
+                elif i in ifbeginlineArray:
+                   ifbeginlineArray_method()
+                #if i in elseifbeginlineArray
+                elif i in elseifbeginlineArray:  
+                   write_last_comment(action_zoomlevel)
+                   elseifbeginlineArray_method()  
+                #if i in elsebeginline
+                elif i == elsebeginline:
+                   elsebeginline_method()
+                #if i is ifendlineArray[IdxIfbeginlineArray] and } is marked to be written in string:
+                elif endifWrite and (i == ifendlineArray[IdxIfbeginlineArray]):
+                   ifendlineArray_method()              
+                #### Nested if statements
+                elif i in ifbeginlineNestedArray:
+                   ifbeginlineNestedArray_method()  
+                #if i in elseifbeginlineNestedArray
+                elif i in elseifbeginlineNestedArray:
+                   elseifbeginlineNestedArray_method() 
+                #if i in elsebeginlineNested
+                elif i == elsebeginlineNested:
+                   elsebeginlineNested_method()
+                #if i is ifendlineNestedArray[IdxIfbeginlineArrayNested] and } is marked to be written in string:
+                elif endifNestedWrite and (i == ifendlineNestedArray[IdxIfbeginlineArrayNested]): 
+                   ifendlineNestedArray_method()
+              
+              
+                # ...,OR return statements):
+                elif i in returnlineArray:
+                   #print('RETURN:',i,line)
+                   if returnTypeArray[returnlineArray.index(i)] == True:
+                      #if pending flags, finish them
+                      decrease_depthlevel()
+                      string+= "\nstop\n"
+                   if returnTypeArray[returnlineArray.index(i)] == False:
+                      #print('possible stop', i, line)
+                      add_note("possible STOP")
                           
         
-        write_last_comment()
         string+= '\n@enduml'
         #print (string)
         
@@ -635,12 +759,13 @@ def process_find_functions(node):
 
    
 
+#finds the functions to process. TO DO: It should be updated after build_db.py and method lookfor_ActionComment_in_node(nodeIN,zoom) have been included
 def find_functions(node):
 
   if node.kind.is_declaration():
      #8 is a function and 21 is c++ class method
     if node.kind.value== 8 or node.kind.value==21:
-       #if os.path.dirname(str(node.location.file)) == './src':
+       #if os.path.dirname(node.location.file.name.decode("utf8")) == './src':
          process_find_functions(node)
        #return
 

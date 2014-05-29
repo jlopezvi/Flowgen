@@ -31,7 +31,7 @@ def get_referenced(self):
 clang.cindex.Cursor.get_referenced = get_referenced
 
 
-#looks for an action comment inside the extent of a given node (zoom level modifies the type of action comment)
+#looks for an annotated action comment inside the extent of a given node (zoom level modifies the type of action comment)
 def lookfor_ActionComment_in_node(nodeIN,zoom):
     #action level 0
     regextextActionComment=    r'^\s*//\$(?!\s+\[)\s+(?P<action>.+)$'
