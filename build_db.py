@@ -76,7 +76,7 @@ def find_functions(node):
             classname = ''
             if node.kind.name=='CXX_METHOD':
                classname= str(node.semantic_parent.spelling.decode("utf-8"))+'::'
-            writefunc.write(node.get_usr().decode("utf8")+'\t'+zoom_str+'\t'+classname+node.displayname.decode("utf8")+'\n')
+            writefunc.write(node.get_usr().decode("utf8")+'\t'+zoom_str+'\t'+str(node.result_type.kind.name)+' '+classname+node.displayname.decode("utf8")+'\n')
        #return
 
   # Recurse for children of this node

@@ -7,8 +7,7 @@ int main()
     //$ ask user whether to proceed
     std::cin >> control_flag;
     
-    if (control_flag==1 && 
-    0==2){
+    if (control_flag==1){
         //$ call shower
         //pointer to the object VINCIA
         VINCIA* vinciaOBJ = new VINCIA();
