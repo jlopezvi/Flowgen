@@ -310,8 +310,8 @@ def process_find_functions(node):
        #anycomment_previousline = regexAnyActionCommentZoomArray[zoom].match(enum_file[i-1-1][1])
     regexContextualComment = re.compile(r'^\s*//\$\s+\[(?P<condition>.+)\]\s*$')
     regexHighlightComment = re.compile(r'^\s*(?P<commandline>.+?)\s+//\$\s*(?:$|//.+$)') 
-    regexIf = re.compile(r'^\s*if\s*\((?P<condition>.*)\)\s*{?\s*(?:$|//.*$)')
-    regexElseIf = re.compile(r'^\s*}?\s*else if\s*\((?P<condition>.*)\)\s*{\s*(?:$|//.*$)')
+    #regexIf = re.compile(r'^\s*if\s*\((?P<condition>.*)\)\s*{?\s*(?:$|//.*$)')
+    #regexElseIf = re.compile(r'^\s*}?\s*else if\s*\((?P<condition>.*)\)\s*{\s*(?:$|//.*$)')
     #this only works in a one line
     #regexIf1line = re.compile(r'^\s*if\s*\((?P<condition>.*)\)\s*{\s*(?:$|//.*$)')
 
@@ -486,18 +486,13 @@ def process_find_functions(node):
                     #increase depthlevel
                     increase_depthlevel()
                     #write 'if' in string
-                    ifstmt=regexIf.match(line)
-                    if ifstmt:
-                      description = regexContextualComment.match(enum_file[i-1-1][1])
-                      if description:
-                         string+= '\n'+ 'if ('+description.group('condition')+') then(yes)''\n'
-                      else:                         
-                         string_condition=''.join(t.spelling.decode("utf-8") for t in ifnodeArray[IdxIfbeginlineArray].get_tokens()) 
-                         print("AAA",string_condition,"AAA")
-                         string+= '\n'+ 'if ('+ifstmt.group('condition')+' ?) then(yes)''\n'
-                    else:
-                      print ('Error: condition not picked up at line', line) 
-                      string+= indentation_level*tab +'\n'+ 'if ('+'Error: unknown condition'+') then(yes)''\n'                     
+                    description = regexContextualComment.match(enum_file[i-1-1][1])
+                    if description:
+                       string+= '\n'+  indentation_level*tab + 'if ('+description.group('condition')+') then(yes)''\n'
+                    else:                         
+                       string_condition=' '.join(t.spelling.decode("utf-8") for t in list(ifnodeArray[IdxIfbeginlineArray].get_children())[0].get_tokens()) 
+                       string_condition=string_condition[:-1]
+                       string+= '\n'+  indentation_level*tab + 'if ('+string_condition+' ?) then(yes)''\n'
                     #mark } endif to be written in string
                     endifWrite=True
                     indentation_level+=1
@@ -514,17 +509,14 @@ def process_find_functions(node):
                  increase_depthlevel()
                  elseifNum+=1
                  #write 'else if' in string
-                 elseifstmt=regexElseIf.match(line)
-                 if elseifstmt:
-                    description = regexContextualComment.match(enum_file[i-1-1][1])
-                    if description:
-                       string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+description.group('condition')+') then (yes)'+'\n'
-                    else:
-                       string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+elseifstmt.group('condition')+' ?) then (yes)'+'\n'
-                 else:
-                   print ('Error: condition not picked up at line', line) 
-                   string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+'Error: unknown condition'+') then (yes)'+'\n'                    
-                 indentation_level+=1              
+                 description = regexContextualComment.match(enum_file[i-1-1][1])
+                 if description:
+                    string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+description.group('condition')+') then (yes)'+'\n'
+                 else:                         
+                    string_condition=' '.join(t.spelling.decode("utf-8") for t in list(ifnodeArray[IdxIfbeginlineArray].get_children())[0].get_tokens()) 
+                    string_condition=string_condition[:-1]
+                    string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+string_condition+' ?) then (yes)'+'\n'
+                 indentation_level+=1             
                  #explore elseif and update ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray
                  ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray = find_ifstmt(ifstructurenodeArray[elseifNum]) 
                  return
@@ -579,16 +571,13 @@ def process_find_functions(node):
                     #increase depthlevel
                     increase_depthlevel()
                     #write 'if' in string
-                    ifstmt=regexIf.match(line)
-                    if ifstmt:
-                      description = regexContextualComment.match(enum_file[i-1-1][1])
-                      if description:
-                         string+= '\n'+ indentation_level*tab + 'if ('+description.group('condition')+') then(yes)''\n'
-                      else:
-                         string+= '\n'+ indentation_level*tab + 'if ('+ifstmt.group('condition')+' ?) then(yes)''\n'
-                    else:
-                      print ('Error: condition not picked up at line', line) 
-                      string+= '\n'+ indentation_level*tab + 'if ('+'Error: unknown condition'+') then(yes)''\n'                     
+                    description = regexContextualComment.match(enum_file[i-1-1][1])
+                    if description:
+                       string+= '\n'+  indentation_level*tab + 'if ('+description.group('condition')+') then(yes)''\n'
+                    else:                         
+                       string_condition=' '.join(t.spelling.decode("utf-8") for t in list(ifnodeArray[IdxIfbeginlineArray].get_children())[0].get_tokens()) 
+                       string_condition=string_condition[:-1]
+                       string+= '\n'+  indentation_level*tab + 'if ('+string_condition+' ?) then(yes)''\n'
                     #mark } Nested endif to be written in string
                     endifNestedWrite=True
                     indentation_level+=1
@@ -602,16 +591,13 @@ def process_find_functions(node):
                  decrease_depthlevel()
                  increase_depthlevel()
                  #write 'else if' in string
-                 elseifstmt=regexElseIf.match(line)
-                 if elseifstmt:
-                    description = regexContextualComment.match(enum_file[i-1-1][1])
-                    if description:
-                       string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+description.group('condition')+') then (yes)'+'\n'
-                    else:
-                       string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+elseifstmt.group('condition')+' ?) then (yes)'+'\n'
-                 else:
-                   print ('Error: condition not picked up at line', line) 
-                   string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+'Error: unknown condition'+') then (yes)'+'\n'                    
+                 description = regexContextualComment.match(enum_file[i-1-1][1])
+                 if description:
+                    string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+description.group('condition')+') then (yes)'+'\n'
+                 else:                         
+                    string_condition=' '.join(t.spelling.decode("utf-8") for t in list(ifnodeArray[IdxIfbeginlineArray].get_children())[0].get_tokens()) 
+                    string_condition=string_condition[:-1]
+                    string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+string_condition+' ?) then (yes)'+'\n'
                  indentation_level+=1  
                  return        
          
@@ -770,7 +756,7 @@ def find_functions(node):
        #if os.path.dirname(node.location.file.name.decode("utf8")) == './src':
          process_find_functions(node)
        #return
-
+  
   # Recurse for children of this node
   for c in node.get_children():
       #print ('children', c.kind)
