@@ -491,7 +491,9 @@ def process_find_functions(node):
                       description = regexContextualComment.match(enum_file[i-1-1][1])
                       if description:
                          string+= '\n'+ 'if ('+description.group('condition')+') then(yes)''\n'
-                      else:
+                      else:                         
+                         string_condition=''.join(t.spelling.decode("utf-8") for t in ifnodeArray[IdxIfbeginlineArray].get_tokens()) 
+                         print("AAA",string_condition,"AAA")
                          string+= '\n'+ 'if ('+ifstmt.group('condition')+' ?) then(yes)''\n'
                     else:
                       print ('Error: condition not picked up at line', line) 
