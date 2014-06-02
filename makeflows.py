@@ -595,11 +595,11 @@ def process_find_functions(node):
                     #write 'if' in string
                     description = regexContextualComment.match(enum_file[i-1-1][1])
                     if description:
-                       string+= '\n'+  indentation_level*tab + 'if ('+description.group('condition')+') then(yes)''\n'
+                       string_tmp[write_zoomlevel]+= '\n'+  indentation_level*tab + 'if ('+description.group('condition')+') then(yes)''\n'
                     else:                         
                        string_condition=' '.join(t.spelling.decode("utf-8") for t in list(ifnodeArray[IdxIfbeginlineArray].get_children())[0].get_tokens()) 
                        string_condition=string_condition[:-1]
-                       string+= '\n'+  indentation_level*tab + 'if ('+string_condition+' ?) then(yes)''\n'
+                       string_tmp[write_zoomlevel]+= '\n'+  indentation_level*tab + 'if ('+string_condition+' ?) then(yes)''\n'
                     #mark } Nested endif to be written in string
                     endifNestedWrite=True
                     indentation_level+=1
