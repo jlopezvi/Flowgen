@@ -40,33 +40,31 @@ def get_referenced(self):
 clang.cindex.Cursor.get_referenced = get_referenced
 
 
-#looks for an action comment inside the extent of a given node (zoom level modifies the type of action comment)
-def lookfor_ActionComment_in_node(nodeIN,zoom):
-    #action level 0
-    regextextActionComment=    r'^\s*//\$(?!\s+\[)\s+(?P<action>.+)$'
-    #action level 1
-    regextextActionComment1=   r'^\s*//\$1(?!\s+\[)\s+(?P<action>.+)$'
-    #action level 0 and 1
-    regextextAnyActionComment1=r'^\s*//\$1?(?!\s+\[)\s+(?P<action>.+)$'
+#looks for an action comment inside the extent of a given node (write_zoomlevel <= diagram_zoom)
+def lookfor_ActionComment_in_node(nodeIN,diagram_zoom):
     
-    #regex selection according to zoom
-    if zoom==0:
-      regexToUse=re.compile(regextextActionComment)
-    elif zoom==1:
-      regexToUse=re.compile(regextextAnyActionComment1)
-          
+    def regexActionComment(zoom):
+       if zoom==0:
+          zoom=''  
+       regextextActionComment_zoom=r'^\s*//\$'+str(zoom)+r'(?!\s+\[)\s+(?P<action>.+)$'
+       return re.compile(regextextActionComment_zoom)       
+
     infile_str=nodeIN.location.file.name.decode("utf-8")
     infile= open(infile_str,'r')            
     start_line=nodeIN.extent.start.line
     end_line=nodeIN.extent.end.line
     enum_file=list(enumerate(infile,start=1))      
     infile.close()
-   
-    #loop over source code lines
-    for i, line in enum_file:
-      if i in range(start_line,end_line):
-         if regexToUse.match(line):
-             return True   
+    
+    #loop over zoom levels, first the lowest
+    for it_zoom in range(0,diagram_zoom+1):
+       #loop over source code lines
+       for i, line in enum_file:
+          if i in range(start_line,end_line):
+             if regexActionComment(it_zoom).match(line):
+                 lookfor_ActionComment_in_node.write_zoomlevel=it_zoom
+                 return True   
+    lookfor_ActionComment_in_node.write_zoomlevel=None
     return False
 
 #looks up in the database generated at compilation time if a given key (function/method' USR) exists
@@ -304,10 +302,16 @@ def process_find_functions(node):
     regextextActionComment=r'^\s*//\$(?!\s+\[)(\s+(?P<tag><\w+>))?\s+(?P<action>.+)$'
     regextextActionComment1=r'^\s*//\$1(?!\s+\[)\s+(?P<action>.+)$'
     regextextAnyActionComment1=r'^\s*//\$1?(?!\s+\[)\s+(?P<action>.+)$'
+    regextextAnyActionComment=r'^\s*//\$(?P<zoomlevel>[0-9])?(?!\s+\[)\s+(?P<action>.+)$'
     regexActionComment = re.compile(regextextActionComment)
     regexActionComment1 = re.compile(regextextActionComment1)
     regexAnyActionCommentZoomArray = [regexActionComment, re.compile(regextextAnyActionComment1)]
        #anycomment_previousline = regexAnyActionCommentZoomArray[zoom].match(enum_file[i-1-1][1])
+    def regexActionComment(zoom):
+       if zoom==0:
+          zoom=''  
+       regextextActionComment_zoom=r'^\s*//\$'+str(zoom)+r'(?!\s+\[)\s+(?P<action>.+)$'
+       return re.compile(regextextActionComment_zoom)       
     regexContextualComment = re.compile(r'^\s*//\$\s+\[(?P<condition>.+)\]\s*$')
     regexHighlightComment = re.compile(r'^\s*(?P<commandline>.+?)\s+//\$\s*(?:$|//.+$)') 
     #regexIf = re.compile(r'^\s*if\s*\((?P<condition>.*)\)\s*{?\s*(?:$|//.*$)')
@@ -327,27 +331,23 @@ def process_find_functions(node):
     
     #look for comment inside function/method
     comment_inside_method = False
-    for j,lineA in enum_file:
-      if j in range(start_line,end_line):
-        commentB = regexActionComment.match(lineA)
-        if commentB:
-          comment_inside_method = True
-          break
+    if lookfor_ActionComment_in_node(node,0):
+       comment_inside_method = True
     
     #if ActionComment inside function/method:
     if comment_inside_method == True :            
       print ('Found %s of kind %s [start_line=%s, end_line=%s. At "%s"]' % (
                                             node.spelling, node.kind.name , node.extent.start.line, node.extent.end.line, node.location.file))
 
-      #TO DO: zoom loop generates all possible zoom levels. Instead, only relevant zoom for each diagram should be generated. 
-      zoom_str_Array=['','1']
-      for zoom in range(0,2):
+      #TO DO: zoom loop generates all possible zoom levels. Instead, only relevant zoom for each diagram should be generated.       
+      zoom_str_Array=['','1','2']
+      for diagram_zoomlevel in range(0,3):
                     
         class_name=''
         if node.kind.name=='CXX_METHOD':           
           class_name=str(node.semantic_parent.spelling.decode("utf8"))+'_'
           #also see node.lexical_parent.spelling
-        outfile_str = str(node.get_usr().decode("utf8"))+zoom_str_Array[zoom]
+        outfile_str = str(node.get_usr().decode("utf8"))+zoom_str_Array[diagram_zoomlevel]
         #remove special characters from outfile_str 
         outfile_str = ''.join(e for e in outfile_str if e.isalnum())
         #outfile= open(outfile_str+'.txt', "w+")  
@@ -374,8 +374,7 @@ def process_find_functions(node):
         IdxIfbeginlineArrayNested = None
         
         #find return statements inside the function
-        #returnlineArray = find_returnstmt(node,zoom)
-        returnlineArray, returnTypeArray=find_returnstmt(node,zoom)
+        returnlineArray, returnTypeArray=find_returnstmt(node,diagram_zoomlevel)
         
         #other variables
         #TO DO: use depthlevel
@@ -383,32 +382,34 @@ def process_find_functions(node):
         #flagparallelactions=(flag TRUE/FALSE,depthlevel)
         #TO DO: change array for another more transparent structure, like an object with attributes
         flagparallelactions=[False,0]
-        lastcommentlinematched=0
+        lastcommentlinematched=[0,0,0]
         tab='   '
         indentation_level=0
-        last_comment_str=''
+        last_comment_str=["","",""]
         string_notes=''
         string=''
-        inside_comment=False
+        string_tmp=["","",""]
+        inside_comment=[False,False,False]
         actioncallsdefArray=[]
-        action_zoomlevel=None               
-        
+        write_zoomlevel=None 
+        ifstmt_write_zoomlevel=None              
+        ifstmtNested_write_zoomlevel=None        
         
         def increase_depthlevel():
            nonlocal depthlevel
            depthlevel+=1
-           write_last_comment(action_zoomlevel)
+           write_last_comment(write_zoomlevel, diagram_zoomlevel)
            return 
 
         def decrease_depthlevel():
            nonlocal flagparallelactions, depthlevel, string, indentation_level
            depthlevel-=1
-           write_last_comment(action_zoomlevel)
-           #if activated parallelflag
-           if flagparallelactions[0]==True and depthlevel==flagparallelactions[1]:
-              string+= indentation_level*tab+'end fork\n' 
-              flagparallelactions[0]=False
-              flagparallelactions[1]=None 
+           write_last_comment(write_zoomlevel, diagram_zoomlevel)
+           ##if activated parallelflag
+           #if flagparallelactions[0]==True and depthlevel==flagparallelactions[1]:
+           #   string+= indentation_level*tab+'end fork\n' 
+           #   flagparallelactions[0]=False
+           #   flagparallelactions[1]=None 
            return        
 
         
@@ -429,19 +430,27 @@ def process_find_functions(node):
               return ':#84add6:'
            elif zoomlevel_IN==1:
               return ':#b2cce5:'
+           elif zoomlevel_IN==2:
+              return ':#e0eaf4:'
                            
-        def write_last_comment(action_zoomlevel):
+        
+        def write_last_comment(write_zoomlevel, diagram_zoomlevel):
+          nonlocal string, string_tmp
+        
+          def write_last_commentIN(write_zoomlevelIN):
            nonlocal string_notes
-           nonlocal string
+           nonlocal string_tmp
            nonlocal last_comment_str
            nonlocal inside_comment
            nonlocal actioncallsdefArray
-           if inside_comment:              
-              #last_comment_str=insert_newlines(last_comment_str)
+           print('write_last_comment:', write_zoomlevelIN,i)
+           if inside_comment[write_zoomlevelIN]:            
+              print('write_last_comment: inside comment')
               #write action comment
-              last_comment_str=indentation_level*tab+color(action_zoomlevel)+last_comment_str+';\n'   
+              last_comment_str[write_zoomlevelIN]=indentation_level*tab+color(write_zoomlevelIN)+last_comment_str[write_zoomlevelIN]+';\n'   
+              #write extra if there are calls
               if actioncallsdefArray:
-                 last_comment_str=last_comment_str[:-2]+"\\n--------\\n"
+                 last_comment_str[write_zoomlevelIN]=last_comment_str[write_zoomlevelIN][:-2]+"\\n--------\\n"
                  for it7 in actioncallsdefArray:
                     print('LOOKING IF CALLS EXIST:',it7.kind.name, it7.get_definition(),it7.location)
                     if read_flowdbs(it7.get_usr().decode("utf8")):
@@ -451,18 +460,33 @@ def process_find_functions(node):
                       classname = ''
                       if it7.kind.name=='CXX_METHOD':
                          classname= str(it7.semantic_parent.spelling.decode("utf-8"))+'::'
-                      last_comment_str+=str(it7.result_type.kind.name)+' '+classname+str(it7.displayname.decode("utf-8"))+' -- [['+call_in_filename_str+'#'+usr_id_str+' link]]'+'\\n'
+                      last_comment_str[write_zoomlevelIN]+=str(it7.result_type.kind.name)+' '+classname+str(it7.displayname.decode("utf-8"))+' -- [['+call_in_filename_str+'#'+usr_id_str+' link]]'+'\\n'
                       #last_comment_str+=str(it7.result_type.kind.name)+' '+str()+str(it7.displayname.decode("utf-8"))+' -- [[http://www.google.es]]'+'\\n'
-                 last_comment_str+=';\n'
+                 last_comment_str[write_zoomlevelIN]+=';\n'
+              #write extra if there are notes
               if string_notes != "":
-                 last_comment_str+= "note right\n"+string_notes+"end note\n"
-              string = string + last_comment_str
-              last_comment_str=''              
-              inside_comment=False
+                 last_comment_str[write_zoomlevelIN]+= "note right\n"+string_notes+"end note\n"
+              #write in temporal string
+              string_tmp[write_zoomlevelIN]+=last_comment_str[write_zoomlevelIN]
+              last_comment_str[write_zoomlevelIN]='' 
+              #reinitialize flags             
+              inside_comment[write_zoomlevelIN]=False
               string_notes=""
               actioncallsdefArray=[]
            return
-           
+          
+          #write last action annotations for current zoom level and all possible higher ones in their corresponding temporal string
+          for zoom_it in range(write_zoomlevel, diagram_zoomlevel+1):
+             write_last_commentIN(zoom_it)
+          #write temporal strings of higher level zooms in the current zoomlevel temporal string
+          for zoom_it2 in range(write_zoomlevel+1,diagram_zoomlevel+1):
+             string_tmp[write_zoomlevel]+=string_tmp[zoom_it2] 
+             string_tmp[zoom_it2]=''
+          #if zoomlevel=0 write temporal string to main string
+          if write_zoomlevel==0:
+             string+=string_tmp[0]
+             string_tmp[0]='' 
+          return
  
         #Functions for the if statements.
         #TO DO: reuse parent-if-statement functions as nested-if-statement functions
@@ -470,29 +494,26 @@ def process_find_functions(node):
         def ifbeginlineArray_method():
                  nonlocal elseifbeginlineArray, elsebeginline, ifstructurenodeArray
                  nonlocal ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray
-                 nonlocal string, indentation_level, depthlevel
-                 nonlocal endifWrite, IdxIfbeginlineArray           
-                 #look for comment inside if statement
+                 nonlocal string_tmp, indentation_level, depthlevel
+                 nonlocal endifWrite, IdxIfbeginlineArray, write_zoomlevel, ifstmt_write_zoomlevel          
+                 #look for comment inside if statement                 
                  IdxIfbeginlineArray=ifbeginlineArray.index(i)
-                 comment_inside_ifstmt = False
-                 for h,lineB in enum_file:                   
-                    if h in range(i,ifendlineArray[IdxIfbeginlineArray]):
-                      commentB = regexAnyActionCommentZoomArray[zoom].match(lineB)
-                      if commentB:
-                        comment_inside_ifstmt = True
-                        break
+                 node=ifnodeArray[IdxIfbeginlineArray]
                  #if comment inside if statement:
-                 if comment_inside_ifstmt == True :
+                 if lookfor_ActionComment_in_node(node,diagram_zoomlevel):
+                    #adjust zoomlevel
+                    ifstmt_write_zoomlevel=lookfor_ActionComment_in_node.write_zoomlevel
+                    write_zoomlevel=ifstmt_write_zoomlevel
                     #increase depthlevel
                     increase_depthlevel()
                     #write 'if' in string
                     description = regexContextualComment.match(enum_file[i-1-1][1])
                     if description:
-                       string+= '\n'+  indentation_level*tab + 'if ('+description.group('condition')+') then(yes)''\n'
+                       string_tmp[write_zoomlevel]+= '\n'+  indentation_level*tab + 'if ('+description.group('condition')+') then(yes)''\n'
                     else:                         
                        string_condition=' '.join(t.spelling.decode("utf-8") for t in list(ifnodeArray[IdxIfbeginlineArray].get_children())[0].get_tokens()) 
                        string_condition=string_condition[:-1]
-                       string+= '\n'+  indentation_level*tab + 'if ('+string_condition+' ?) then(yes)''\n'
+                       string_tmp[write_zoomlevel]+= '\n'+  indentation_level*tab + 'if ('+string_condition+' ?) then(yes)''\n'
                     #mark } endif to be written in string
                     endifWrite=True
                     indentation_level+=1
@@ -504,18 +525,19 @@ def process_find_functions(node):
         
         def elseifbeginlineArray_method():  
                  nonlocal ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray
-                 nonlocal elseifNum, string, indentation_level                     
+                 nonlocal elseifNum, string_tmp, indentation_level, write_zoomlevel                     
+                 write_zoomlevel=ifstmt_write_zoomlevel
                  decrease_depthlevel()
                  increase_depthlevel()
                  elseifNum+=1
                  #write 'else if' in string
                  description = regexContextualComment.match(enum_file[i-1-1][1])
                  if description:
-                    string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+description.group('condition')+') then (yes)'+'\n'
+                    string_tmp[write_zoomlevel]+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+description.group('condition')+') then (yes)'+'\n'
                  else:                         
                     string_condition=' '.join(t.spelling.decode("utf-8") for t in list(ifnodeArray[IdxIfbeginlineArray].get_children())[0].get_tokens()) 
                     string_condition=string_condition[:-1]
-                    string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+string_condition+' ?) then (yes)'+'\n'
+                    string_tmp[write_zoomlevel]+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+string_condition+' ?) then (yes)'+'\n'
                  indentation_level+=1             
                  #explore elseif and update ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray
                  ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray = find_ifstmt(ifstructurenodeArray[elseifNum]) 
@@ -523,27 +545,29 @@ def process_find_functions(node):
                  
         def elsebeginline_method():  
                  nonlocal ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray
-                 nonlocal string, indentation_level
+                 nonlocal string_tmp, indentation_level, write_zoomlevel
+                 write_zoomlevel=ifstmt_write_zoomlevel
                  decrease_depthlevel()
                  increase_depthlevel()
                  #write 'else' in string
-                 string+= (indentation_level-1)*tab+'else(no)'+'\n' 
+                 string_tmp[write_zoomlevel]+= (indentation_level-1)*tab+'else(no)'+'\n' 
                  #explore else and update ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray
                  ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray = find_ifstmt(ifstructurenodeArray[-1]) 
                  return    
                  
         def ifendlineArray_method():
-                   nonlocal string, indentation_level, depthlevel
-                   nonlocal endifWrite, elsebeginline,elseifNum
+                   nonlocal string_tmp, indentation_level, depthlevel
+                   nonlocal endifWrite, elsebeginline,elseifNum, ifstmt_write_zoomlevel, write_zoomlevel
+                   write_zoomlevel=ifstmt_write_zoomlevel
                    decrease_depthlevel()                   
                    #is the else condition explicitly written? Otherwise write now
                    if elsebeginline==None:
-                      string+= (indentation_level-1)*tab+'else(no)'+'\n'
+                      string_tmp[write_zoomlevel]+= (indentation_level-1)*tab+'else(no)'+'\n'
                    #write endif's in string
                    for n in range(elseifNum):
-                      string+= (indentation_level-1)*tab+'endif'+'\n'
+                      string_tmp[write_zoomlevel]+= (indentation_level-1)*tab+'endif'+'\n'
                       indentation_level-=1
-                   string+= (indentation_level-1)*tab +'endif'+'\n'+'\n'
+                   string_tmp[write_zoomlevel]+= (indentation_level-1)*tab +'endif'+'\n'+'\n'
                    indentation_level-=1
                    
                    #reset all variables
@@ -552,22 +576,20 @@ def process_find_functions(node):
                    elseifNum = 0
                    del elseifbeginlineArray[:]
                    elsebeginline=None
+                   ifstmt_write_zoomlevel=None
                    return
         ##
         def ifbeginlineNestedArray_method():
-                 nonlocal IdxIfbeginlineArrayNested, string, indentation_level, depthlevel, endifNestedWrite
-                 nonlocal elseifbeginlineNestedArray, elsebeginlineNested, ifstructurenodeNestedArray                 
+                 nonlocal IdxIfbeginlineArrayNested, string_tmp, indentation_level, depthlevel, endifNestedWrite
+                 nonlocal elseifbeginlineNestedArray, elsebeginlineNested, ifstructurenodeNestedArray, ifstmtNested_write_zoomlevel, write_zoomlevel             
                  #look for comment inside Nested if statement
                  IdxIfbeginlineArrayNested=ifbeginlineNestedArray.index(i)
-                 comment_inside_ifstmt = False
-                 for h,lineB in enum_file:
-                    if h in range(i,ifendlineNestedArray[IdxIfbeginlineArrayNested]):
-                      commentB = regexAnyActionCommentZoomArray[zoom].match(lineB)
-                      if commentB:
-                        comment_inside_ifstmt = True
-                        break
-                 #if comment inside Nested if statement:
-                 if comment_inside_ifstmt == True :
+                 node=ifnodeArray[IdxIfbeginlineArrayNested]
+                 #if comment inside if statement:
+                 if lookfor_ActionComment_in_node(node,diagram_zoomlevel):
+                    #adjust zoomlevel
+                    ifstmtNested_write_zoomlevel=lookfor_ActionComment_in_node.write_zoomlevel
+                    write_zoomlevel=ifstmtNested_write_zoomlevel
                     #increase depthlevel
                     increase_depthlevel()
                     #write 'if' in string
@@ -586,41 +608,44 @@ def process_find_functions(node):
                  return                  
    
         def elseifbeginlineNestedArray_method():
-                 nonlocal string, indentation_level, elseifNumNested 
+                 nonlocal string, indentation_level, elseifNumNested, write_zoomlevel
                  elseifNumNested+=1
+                 write_zoomlevel=ifstmtNested_write_zoomlevel
                  decrease_depthlevel()
                  increase_depthlevel()
                  #write 'else if' in string
                  description = regexContextualComment.match(enum_file[i-1-1][1])
                  if description:
-                    string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+description.group('condition')+') then (yes)'+'\n'
+                    string_tmp[write_zoomlevel]+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+description.group('condition')+') then (yes)'+'\n'
                  else:                         
                     string_condition=' '.join(t.spelling.decode("utf-8") for t in list(ifnodeArray[IdxIfbeginlineArray].get_children())[0].get_tokens()) 
                     string_condition=string_condition[:-1]
-                    string+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+string_condition+' ?) then (yes)'+'\n'
+                    string_tmp[write_zoomlevel]+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+string_condition+' ?) then (yes)'+'\n'
                  indentation_level+=1  
                  return        
          
         def elsebeginlineNested_method():
-                 nonlocal string, indentation_level
+                 nonlocal string_tmp, indentation_level, write_zoomlevel
+                 write_zoomlevel=ifstmtNested_write_zoomlevel
                  decrease_depthlevel()
                  increase_depthlevel()
                  #write 'else' in string
-                 string+= (indentation_level-1)*tab+'else(no)'+'\n' 
+                 string_tmp[write_zoomlevel]+= (indentation_level-1)*tab+'else(no)'+'\n' 
                  return        
         
         def ifendlineNestedArray_method():
-                   nonlocal string, indentation_level, depthlevel
-                   nonlocal endifNestedWrite, elsebeginlineNested, elseifNumNested
+                   nonlocal string_tmp, indentation_level, depthlevel
+                   nonlocal endifNestedWrite, elsebeginlineNested, elseifNumNested, ifstmtNested_write_zoomlevel, write_zoomlevel
+                   write_zoomlevel=ifstmtNested_write_zoomlevel
                    decrease_depthlevel()
                    #is the else condition explicitly written? Otherwise write now
                    if elsebeginlineNested==None:
-                      string+= (indentation_level-1)*tab+'else(no)'+'\n' 
+                      string_tmp[write_zoomlevel]+= (indentation_level-1)*tab+'else(no)'+'\n' 
                    #write endif's in string
                    for n in range(elseifNumNested):
-                      string+= (indentation_level-1)*tab+'endif'+'\n'
+                      string_tmp[write_zoomlevel]+= (indentation_level-1)*tab+'endif'+'\n'
                       indentation_level-=1
-                   string+= (indentation_level-1)*tab+'endif'+'\n'+'\n'
+                   string_tmp[write_zoomlevel]+= (indentation_level-1)*tab+'endif'+'\n'+'\n'
                    indentation_level-=1
                    
                    #reset all variables
@@ -629,57 +654,59 @@ def process_find_functions(node):
                    elseifNumNested = 0
                    del elseifbeginlineNestedArray[:]
                    elsebeginlineNested=None 
+                   ifstmtNested_write_zoomlevel=None
                    return         
         
                                                           
-        string+='@startuml\n\nstart\n skinparam activityBackgroundColor #84add6 \n'
+        string+='@startuml\n\nstart\n skinparam activityBackgroundColor #white \n'
         
         #main loop over source code lines
         #TO DO: optimization
         for i, line in enum_file:
           if i in range(start_line,end_line):
-          
-             anycomment = regexAnyActionCommentZoomArray[zoom].match(line)
+             
+             #look for an annotated action and set zoomlevel if found
+             for zoom_it2 in range(0,diagram_zoomlevel+1):
+                anycomment = regexActionComment(zoom_it2).match(line)
+                if anycomment:
+                   write_zoomlevel=zoom_it2
+                   break
+             #look for highlight annotation
              comment_highlight = regexHighlightComment.match(line)
              #actions
              if anycomment:
                       #this line continues a previous multi-line action annotation
-                      if lastcommentlinematched == i-1:
-                         last_comment_str=last_comment_str+'\\n'+anycomment.group('action')
+                      if lastcommentlinematched[write_zoomlevel] == i-1:
+                         last_comment_str[write_zoomlevel]+='\\n'+anycomment.group('action')
                       #first line of action annotation
                       else:
-                         write_last_comment(action_zoomlevel)
-                         #new comment, with specification of zoom                         
-                         inside_comment=True
-                         comment = regexActionComment.match(line)
-                         comment1 = regexActionComment1.match(line)
-                         if comment:
-                            action_zoomlevel=0
-                            #if <parallel>
-                            #TO DO combine parallel and if statements. paralell inside parallel
-                            if comment.group('tag'):
-                               if comment.group('tag')=="<parallel>":
-                                  #if begin of parallel actions:
-                                  if flagparallelactions[0]==False:
-                                     string+= indentation_level*tab+'fork\n'
-                                     flagparallelactions[0]=True
-                                     flagparallelactions[1]=depthlevel
-                                  #else
-                                  else:
-                                     if depthlevel==flagparallelactions[1]:
-                                        string+= indentation_level*tab+'fork again\n'
-                            #if not <parallel> but activated parallelflag
-                            else:
-                               if flagparallelactions[0]==True and depthlevel==flagparallelactions[1]:
-                                  string+= indentation_level*tab+'end fork\n' 
-                                  flagparallelactions[0]=False
-                                  flagparallelactions[1]=None 
+                            write_last_comment(write_zoomlevel, diagram_zoomlevel)
+                            #new comment at the given zoom level                        
+                            inside_comment[write_zoomlevel]=True
+                            ##if <parallel>
+                            ##TO DO combine parallel and if statements. paralell inside parallel
+                            #if comment.group('tag'):
+                            #   if comment.group('tag')=="<parallel>":
+                            #      #if begin of parallel actions:
+                            #      if flagparallelactions[0]==False:
+                            #         string+= indentation_level*tab+'fork\n'
+                            #         flagparallelactions[0]=True
+                            #         flagparallelactions[1]=depthlevel
+                            #      #else
+                            #      else:
+                            #         if depthlevel==flagparallelactions[1]:
+                            #            string+= indentation_level*tab+'fork again\n'
+                            ##if not <parallel> but activated parallelflag
+                            #else:
+                            #   if flagparallelactions[0]==True and depthlevel==flagparallelactions[1]:
+                            #      string+= indentation_level*tab+'end fork\n' 
+                            #      flagparallelactions[0]=False
+                            #      flagparallelactions[1]=None 
                             #add line to current action annotation
-                            last_comment_str+= comment.group('action')
-                         elif comment1:
-                            action_zoomlevel=1
-                            last_comment_str+= comment1.group('action')
-                      lastcommentlinematched = i 
+                            last_comment_str[write_zoomlevel] += anycomment.group('action')
+                            print('last_comment_str:',write_zoomlevel, last_comment_str[write_zoomlevel])
+
+                      lastcommentlinematched[write_zoomlevel] = i 
              
              else:
              
@@ -703,7 +730,6 @@ def process_find_functions(node):
                    ifbeginlineArray_method()
                 #if i in elseifbeginlineArray
                 elif i in elseifbeginlineArray:  
-                   write_last_comment(action_zoomlevel)
                    elseifbeginlineArray_method()  
                 #if i in elsebeginline
                 elif i == elsebeginline:
@@ -730,13 +756,15 @@ def process_find_functions(node):
                    #print('RETURN:',i,line)
                    if returnTypeArray[returnlineArray.index(i)] == True:
                       #if pending flags, finish them
+                      write_zoomlevel=0
                       decrease_depthlevel()
                       string+= "\nstop\n"
                    if returnTypeArray[returnlineArray.index(i)] == False:
                       #print('possible stop', i, line)
                       add_note("possible STOP")
                           
-        
+                          
+        write_last_comment(0, diagram_zoomlevel)
         string+= '\n@enduml'
         #print (string)
         

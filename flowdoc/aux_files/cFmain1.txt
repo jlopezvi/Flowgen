@@ -1,11 +1,11 @@
 @startuml
 
 start
- skinparam activityBackgroundColor #84add6 
+ skinparam activityBackgroundColor #white 
 :#84add6:ask user whether to proceed;
 
-if (control_flag == 1 && 0 == 2  ?) then(yes)
-   :#84add6:call shower\n--------\nVOID VINCIA::shower() -- [[source1.html#cCVINCIAFshower link]]\n;
+if (control_flag == 1  ?) then(yes)
+   :#b2cce5:call shower;
 else(no)
 endif
 

@@ -8,10 +8,11 @@ int main()
     std::cin >> control_flag;
     
     if (control_flag==1){
-        //$ call shower
+        //$1 call shower
         //pointer to the object VINCIA
         VINCIA* vinciaOBJ = new VINCIA();
-        vinciaOBJ->shower();  //$   
+        vinciaOBJ->shower();   
+        //$2 test 
     }	
     return 0;
 }

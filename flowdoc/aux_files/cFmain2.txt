@@ -4,6 +4,13 @@ start
  skinparam activityBackgroundColor #white 
 :#84add6:ask user whether to proceed;
 
+if (control_flag == 1  ?) then(yes)
+   :#b2cce5:call shower;
+   :#e0eaf4:test ;
+else(no)
+endif
+
+
 stop
 
 @enduml
