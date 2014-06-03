@@ -3,6 +3,7 @@ import re
 import sys
 import clang.cindex
 import os
+import filecmp
 
 #clang node types (CursorKind)
 #21: CXX_METHOD
@@ -63,12 +64,13 @@ def lookfor_ActionComment_in_node(nodeIN,zoom):
 
 
 def find_functions(node):
-
-  global writefunc
+  
+  global writefunc, relevant_folder
   if node.kind.is_declaration():
      #8 is a function and 21 is c++ class method
     if node.kind.value== 8 or node.kind.value==21:
-       #if os.path.dirname(str(node.location.file)) == './src':
+       if os.path.dirname(node.location.file.name.decode("utf8")) == relevant_folder:
+         #print(node.location.file.name.decode("utf8"))         
          if lookfor_ActionComment_in_node(node,0):
             zoom_str='0'
             if lookfor_ActionComment_in_node(node,1):
@@ -76,8 +78,9 @@ def find_functions(node):
             classname = ''
             if node.kind.name=='CXX_METHOD':
                classname= str(node.semantic_parent.spelling.decode("utf-8"))+'::'
+            print('Found annotated method/function:', classname+node.displayname.decode("utf8"))
             writefunc.write(node.get_usr().decode("utf8")+'\t'+zoom_str+'\t'+str(node.result_type.kind.name)+' '+classname+node.displayname.decode("utf8")+'\n')
-       #return
+       return
 
   # Recurse for children of this node
   for c in node.get_children():
@@ -87,11 +90,17 @@ def find_functions(node):
 #### main program
 
 index = clang.cindex.Index.create()
-args=["-Wall","-ansi","-I./include"]
+args=["-Wall","-ansi"]
+if len(sys.argv)>=2:
+   args+=sys.argv[2:]
 tu = index.parse(sys.argv[1],args)
 print ('Translation unit:', tu.spelling.decode("utf-8"))
+relevant_folder=os.path.dirname(tu.spelling.decode("utf-8"))
+for diagnostic in tu.diagnostics:
+  print(diagnostic)
 infile_str=os.path.splitext(os.path.basename(sys.argv[1]))[0]
-print (infile_str)
+#print (infile_str)
 writefunc = open('flowdoc/aux_files/'+infile_str+'.flowdb',"w")
 find_functions(tu.cursor)
 writefunc.close()
+

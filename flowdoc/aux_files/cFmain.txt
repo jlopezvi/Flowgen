@@ -2,7 +2,7 @@
 
 start
  skinparam activityBackgroundColor #white 
-:#84add6:ask user whether to proceed;
+:#84add6:ask user whether to proceed\n--------\nVOID VINCIAPARENT::shower() -- [[source1.html#cCVINCIAPARENTFshower link]]\n;
 
 stop
 

@@ -10,9 +10,10 @@ int main()
     if (control_flag==1){
         //$1 call shower
         //pointer to the object VINCIA
-        VINCIA* vinciaOBJ = new VINCIA();
-        vinciaOBJ->shower();   
+        VINCIAPARENT* vinciaOBJ = new VINCIA();
+        vinciaOBJ->shower();  //$ 
         //$2 test 
-    }	
+    } else if(0==0){
+    }
     return 0;
 }

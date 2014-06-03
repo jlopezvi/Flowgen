@@ -1,4 +1,9 @@
-class VINCIA {
+class VINCIAPARENT {
 public:
-    void shower();
+    virtual void shower();
+};
+
+class VINCIA : public VINCIAPARENT {
+public:
+    virtual void shower();
 };

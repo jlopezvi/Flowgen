@@ -24,20 +24,20 @@ all: flowdoc
 
 flowdoc/aux_files/%.flowdb : src/%.cpp simple_demo_src.cpp build_db.py
 	@echo "cpp-to-flowdb: preprocessing"
-	python3 build_db.py simple_demo_src.cpp
-	python3 build_db.py $^
+	python3 build_db.py simple_demo_src.cpp -I./include
+	python3 build_db.py src/source1.cpp -I./include
 		
 flowdoc/aux_files/runphase: $(CCSOURCEFILES) simple_demo_src.cpp makeflows.py
 	@echo "cpp-to-graphs: depends on $^"
-	python3 makeflows.py simple_demo_src.cpp
-	python3 makeflows.py $^
-	cd flowdoc/aux_files && java -jar plantuml.jar *.txt
+	python3 makeflows.py simple_demo_src.cpp -I./include
+	python3 makeflows.py src/source1.cpp -I./include
+	java -jar plantuml.jar flowdoc/aux_files/*.txt
 	cat <<EOF > flowdoc/aux_files/runphase
 	
 flowdoc/%.html : flowdoc/aux_files/%.flowdb makehtml.py flowdoc/aux_files/runphase
 	@echo "to-html: processing $^ to make $@"
 	python3 makehtml.py simple_demo_src.cpp
-	python3 makehtml.py $^
+	python3 makehtml.py src/source1.cpp
 			
 flowdoc: simple_demo_src.cpp src/*.cpp $(FLOWDBS) $(FLOWHTML) Makefile flowdoc/aux_files/runphase 
 	@echo "Hopla! Finished flowdoc creation. Check flowdocs."

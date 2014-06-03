@@ -15,8 +15,8 @@ import csv
 
 #clang node types (CursorKind)
 #21: CXX_METHOD
-#205: if statement
-#202: compound statement
+#205: IF_STMT  an if statement
+#202: COMPOUND_STMT  a compound statement
 #212: continue statement.
 #213: A break statement.
 #214: A return statement.
@@ -75,12 +75,12 @@ def read_flowdbs(key):
           if key==row[0]:
               temp_file_str=os.path.splitext(os.path.basename(file))[0]
               read_flowdbs.file=temp_file_str
-              #read_flowdbs.zoom=row[1]
-              #read_flowdbs.displayname=row[2]
-              print (infile_str)
-              print('\n\nYEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEES\n\n')
+              ##read_flowdbs.zoom=row[1]
+              ##read_flowdbs.displayname=row[2]
+              #print (infile_str)
+              #print('\n\nYEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEES\n\n')
               return True
-    print('\n\nNOOOOOOOOOEEEEEEEEEEEEEEEEEEEEEEEEEEEEE\n\n')
+    #print('\n\nNOOOOOOOOOEEEEEEEEEEEEEEEEEEEEEEEEEEEEE\n\n')
     return False
        
         
@@ -255,25 +255,32 @@ def find_ifstmt(nodeIN):
   find_ifstmtRE(nodeIN)
   return ifbeginlineArrayIN,ifendlineArrayIN, ifnodeArrayIN     
 
-#find the else if and else statements of a given if-statement
+#finds the then{} else if{} and else{} statements of a given if-statement
+#elseifbeginlineArrayIN: array with the else-if begin lines
+#elsebeginlineIN: array with the else begin line (if existing)
+#ifstructurenodeArrayIN: array with the compound statement nodes of then, else-if, and else (if existing)
+#ifstructureelseifnodeArrayIN: array with the else-if nodes
 def find_elsestmt(nodeIN):
   elseifbeginlineArrayIN=[]
   elsebeginlineIN=None
-  ifstructurenodeArrayIN=[]  
-  #add then() node
+  ifstructurenodeArrayIN=[]
+  ifstructureelseifnodeArrayIN=[] 
+  #add then{} node
   for d in nodeIN.get_children():
-     if (d.kind.value==202): 
+     if (d.kind.name=='COMPOUND_STMT'): 
         ifstructurenodeArrayIN.append(d)
         break  
   
   def find_elsestmtRE(nodeIN2):
     for e in nodeIN2.get_children():
-      if e.kind.value==205:
+      if e.kind.name=='IF_STMT':
+        #add elseif() node
+        ifstructureelseifnodeArrayIN.append(e)
         find_elsestmtRE.node_lastelseifstmt=e
         elseifbeginlineArrayIN.append(e.extent.start.line)
-        #add elseif() node
+        #add compound statement corresponding to elseif() node
         for f in e.get_children():
-           if (f.kind.value==202): 
+           if (f.kind.name=='COMPOUND_STMT'): 
               ifstructurenodeArrayIN.append(f)
               break              
         find_elsestmtRE(e)
@@ -283,14 +290,14 @@ def find_elsestmt(nodeIN):
   
   counter=0
   for f in find_elsestmtRE.node_lastelseifstmt.get_children():
-    if f.kind.value==202:
+    if f.kind.name=='COMPOUND_STMT':
        counter+=1
        if counter==2:
              elsebeginlineIN=f.extent.start.line
              #add else() node
              ifstructurenodeArrayIN.append(f)
   
-  return elseifbeginlineArrayIN,elsebeginlineIN, ifstructurenodeArrayIN   
+  return elseifbeginlineArrayIN,elsebeginlineIN,ifstructurenodeArrayIN,ifstructureelseifnodeArrayIN 
 
 
 #main process function
@@ -354,7 +361,7 @@ def process_find_functions(node):
 
         #find if statements inside the function     
         ifbeginlineArray, ifendlineArray, ifnodeArray = find_ifstmt(node)        
-        print (ifbeginlineArray, ifendlineArray, ifnodeArray)
+        #print (ifbeginlineArray, ifendlineArray, ifnodeArray)
         
         #variables for conditional statements ('Nested' means nested inside another conditional statement)
         elseifbeginlineArray=[]
@@ -363,9 +370,11 @@ def process_find_functions(node):
         ifbeginlineNestedArray=[]
         ifendlineNestedArray=[]
         ifnodeNestedArray=[]
+        ifstructureelseifnodeArray=[]
         elseifbeginlineNestedArray=[]
         elsebeginlineNested=None 
         ifstructurenodeNestedArray=[]
+        ifstructureelseifnodeNestedArray=[]
         endifWrite = False
         endifNestedWrite = False
         elseifNum = 0
@@ -386,7 +395,7 @@ def process_find_functions(node):
         tab='   '
         indentation_level=0
         last_comment_str=["","",""]
-        string_notes=''
+        string_notes=["","",""]
         string=''
         string_tmp=["","",""]
         inside_comment=[False,False,False]
@@ -398,13 +407,13 @@ def process_find_functions(node):
         def increase_depthlevel():
            nonlocal depthlevel
            depthlevel+=1
-           write_last_comment(write_zoomlevel, diagram_zoomlevel)
+           write_last_comment(write_zoomlevel)
            return 
 
         def decrease_depthlevel():
            nonlocal flagparallelactions, depthlevel, string, indentation_level
            depthlevel-=1
-           write_last_comment(write_zoomlevel, diagram_zoomlevel)
+           write_last_comment(write_zoomlevel)
            ##if activated parallelflag
            #if flagparallelactions[0]==True and depthlevel==flagparallelactions[1]:
            #   string+= indentation_level*tab+'end fork\n' 
@@ -415,7 +424,7 @@ def process_find_functions(node):
         
         def add_note(stringIN):
            nonlocal string_notes
-           string_notes+=stringIN+'\n'
+           string_notes[write_zoomlevel]+=stringIN+'\n'
            return                   
         
         #taken from http://stackoverflow.com/questions/2657693/insert-a-newline-character-every-64-characters-using-python           
@@ -434,8 +443,8 @@ def process_find_functions(node):
               return ':#e0eaf4:'
                            
         
-        def write_last_comment(write_zoomlevel, diagram_zoomlevel):
-          nonlocal string, string_tmp
+        def write_last_comment(write_zoomlevelIN2):
+          nonlocal string, string_tmp, diagram_zoomlevel
         
           def write_last_commentIN(write_zoomlevelIN):
            nonlocal string_notes
@@ -443,16 +452,14 @@ def process_find_functions(node):
            nonlocal last_comment_str
            nonlocal inside_comment
            nonlocal actioncallsdefArray
-           print('write_last_comment:', write_zoomlevelIN,i)
-           if inside_comment[write_zoomlevelIN]:            
-              print('write_last_comment: inside comment')
+           if inside_comment[write_zoomlevelIN]:
               #write action comment
               last_comment_str[write_zoomlevelIN]=indentation_level*tab+color(write_zoomlevelIN)+last_comment_str[write_zoomlevelIN]+';\n'   
               #write extra if there are calls
               if actioncallsdefArray:
                  last_comment_str[write_zoomlevelIN]=last_comment_str[write_zoomlevelIN][:-2]+"\\n--------\\n"
                  for it7 in actioncallsdefArray:
-                    print('LOOKING IF CALLS EXIST:',it7.kind.name, it7.get_definition(),it7.location)
+                    #print('LOOKING IF CALLS EXIST:',it7.kind.name, it7.get_definition(),it7.location)
                     if read_flowdbs(it7.get_usr().decode("utf8")):
                       call_in_filename_str=read_flowdbs.file+'.html'
                       usr_id_str= str(it7.get_usr().decode("utf-8"))
@@ -464,26 +471,26 @@ def process_find_functions(node):
                       #last_comment_str+=str(it7.result_type.kind.name)+' '+str()+str(it7.displayname.decode("utf-8"))+' -- [[http://www.google.es]]'+'\\n'
                  last_comment_str[write_zoomlevelIN]+=';\n'
               #write extra if there are notes
-              if string_notes != "":
-                 last_comment_str[write_zoomlevelIN]+= "note right\n"+string_notes+"end note\n"
+              if string_notes[write_zoomlevelIN] != "":
+                 last_comment_str[write_zoomlevelIN]+= "note right\n"+string_notes[write_zoomlevelIN]+"end note\n"
+                 string_notes[write_zoomlevelIN]=""
               #write in temporal string
               string_tmp[write_zoomlevelIN]+=last_comment_str[write_zoomlevelIN]
               last_comment_str[write_zoomlevelIN]='' 
               #reinitialize flags             
               inside_comment[write_zoomlevelIN]=False
-              string_notes=""
               actioncallsdefArray=[]
            return
           
           #write last action annotations for current zoom level and all possible higher ones in their corresponding temporal string
-          for zoom_it in range(write_zoomlevel, diagram_zoomlevel+1):
+          for zoom_it in range(write_zoomlevelIN2, diagram_zoomlevel+1):
              write_last_commentIN(zoom_it)
           #write temporal strings of higher level zooms in the current zoomlevel temporal string
-          for zoom_it2 in range(write_zoomlevel+1,diagram_zoomlevel+1):
-             string_tmp[write_zoomlevel]+=string_tmp[zoom_it2] 
+          for zoom_it2 in range(write_zoomlevelIN2+1,diagram_zoomlevel+1):
+             string_tmp[write_zoomlevelIN2]+=string_tmp[zoom_it2] 
              string_tmp[zoom_it2]=''
           #if zoomlevel=0 write temporal string to main string
-          if write_zoomlevel==0:
+          if write_zoomlevelIN2==0:
              string+=string_tmp[0]
              string_tmp[0]='' 
           return
@@ -492,7 +499,7 @@ def process_find_functions(node):
         #TO DO: reuse parent-if-statement functions as nested-if-statement functions
         
         def ifbeginlineArray_method():
-                 nonlocal elseifbeginlineArray, elsebeginline, ifstructurenodeArray
+                 nonlocal elseifbeginlineArray, elsebeginline, ifstructurenodeArray, ifstructureelseifnodeArray
                  nonlocal ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray
                  nonlocal string_tmp, indentation_level, depthlevel
                  nonlocal endifWrite, IdxIfbeginlineArray, write_zoomlevel, ifstmt_write_zoomlevel          
@@ -511,14 +518,14 @@ def process_find_functions(node):
                     if description:
                        string_tmp[write_zoomlevel]+= '\n'+  indentation_level*tab + 'if ('+description.group('condition')+') then(yes)''\n'
                     else:                         
-                       string_condition=' '.join(t.spelling.decode("utf-8") for t in list(ifnodeArray[IdxIfbeginlineArray].get_children())[0].get_tokens()) 
+                       string_condition=' '.join(t.spelling.decode("utf-8") for t in list(node.get_children())[0].get_tokens()) 
                        string_condition=string_condition[:-1]
                        string_tmp[write_zoomlevel]+= '\n'+  indentation_level*tab + 'if ('+string_condition+' ?) then(yes)''\n'
                     #mark } endif to be written in string
                     endifWrite=True
                     indentation_level+=1
-                    #explore substructure: then / else if/ else: elseifbeginlineArray, elsebeginline, ifstructurenodeArray
-                    elseifbeginlineArray, elsebeginline, ifstructurenodeArray = find_elsestmt(ifnodeArray[IdxIfbeginlineArray])                  
+                    #explore substructure: then / else if/ else: elseifbeginlineArray, elsebeginline, ifstructurenodeArray, ifstructureelseifnodeArray
+                    elseifbeginlineArray, elsebeginline, ifstructurenodeArray, ifstructureelseifnodeArray = find_elsestmt(ifnodeArray[IdxIfbeginlineArray])                  
                     #explore then and update ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray 
                     ifbeginlineNestedArray, ifendlineNestedArray, ifnodeNestedArray = find_ifstmt(ifstructurenodeArray[0])               
                  return
@@ -530,12 +537,13 @@ def process_find_functions(node):
                  decrease_depthlevel()
                  increase_depthlevel()
                  elseifNum+=1
+                 node=ifstructureelseifnodeArray[elseifNum-1]
                  #write 'else if' in string
                  description = regexContextualComment.match(enum_file[i-1-1][1])
                  if description:
                     string_tmp[write_zoomlevel]+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+description.group('condition')+') then (yes)'+'\n'
                  else:                         
-                    string_condition=' '.join(t.spelling.decode("utf-8") for t in list(ifnodeArray[IdxIfbeginlineArray].get_children())[0].get_tokens()) 
+                    string_condition=' '.join(t.spelling.decode("utf-8") for t in list(node.get_children())[0].get_tokens()) 
                     string_condition=string_condition[:-1]
                     string_tmp[write_zoomlevel]+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+string_condition+' ?) then (yes)'+'\n'
                  indentation_level+=1             
@@ -581,7 +589,7 @@ def process_find_functions(node):
         ##
         def ifbeginlineNestedArray_method():
                  nonlocal IdxIfbeginlineArrayNested, string_tmp, indentation_level, depthlevel, endifNestedWrite
-                 nonlocal elseifbeginlineNestedArray, elsebeginlineNested, ifstructurenodeNestedArray, ifstmtNested_write_zoomlevel, write_zoomlevel             
+                 nonlocal elseifbeginlineNestedArray, elsebeginlineNested, ifstructurenodeNestedArray, ifstructureelseifnodeNestedArray, ifstmtNested_write_zoomlevel, write_zoomlevel             
                  #look for comment inside Nested if statement
                  IdxIfbeginlineArrayNested=ifbeginlineNestedArray.index(i)
                  node=ifnodeArray[IdxIfbeginlineArrayNested]
@@ -597,19 +605,20 @@ def process_find_functions(node):
                     if description:
                        string_tmp[write_zoomlevel]+= '\n'+  indentation_level*tab + 'if ('+description.group('condition')+') then(yes)''\n'
                     else:                         
-                       string_condition=' '.join(t.spelling.decode("utf-8") for t in list(ifnodeArray[IdxIfbeginlineArray].get_children())[0].get_tokens()) 
+                       string_condition=' '.join(t.spelling.decode("utf-8") for t in list(node.get_children())[0].get_tokens()) 
                        string_condition=string_condition[:-1]
                        string_tmp[write_zoomlevel]+= '\n'+  indentation_level*tab + 'if ('+string_condition+' ?) then(yes)''\n'
                     #mark } Nested endif to be written in string
                     endifNestedWrite=True
                     indentation_level+=1
                     #explore substructure: then / else if/ else: elseifbeginlineNestedArray, elsebeginlineNested, ifstructurenodeNestedArray
-                    elseifbeginlineNestedArray, elsebeginlineNested, ifstructurenodeNestedArray = find_elsestmt(ifnodeNestedArray[IdxIfbeginlineArrayNested])
+                    elseifbeginlineNestedArray, elsebeginlineNested, ifstructurenodeNestedArray, ifstructureelseifnodeNestedArray = find_elsestmt(ifnodeNestedArray[IdxIfbeginlineArrayNested])
                  return                  
    
         def elseifbeginlineNestedArray_method():
                  nonlocal string, indentation_level, elseifNumNested, write_zoomlevel
                  elseifNumNested+=1
+                 node=ifstructureelseifnodeNestedArray[elseifNumNested-1]
                  write_zoomlevel=ifstmtNested_write_zoomlevel
                  decrease_depthlevel()
                  increase_depthlevel()
@@ -618,7 +627,7 @@ def process_find_functions(node):
                  if description:
                     string_tmp[write_zoomlevel]+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+description.group('condition')+') then (yes)'+'\n'
                  else:                         
-                    string_condition=' '.join(t.spelling.decode("utf-8") for t in list(ifnodeArray[IdxIfbeginlineArray].get_children())[0].get_tokens()) 
+                    string_condition=' '.join(t.spelling.decode("utf-8") for t in list(node.get_children())[0].get_tokens()) 
                     string_condition=string_condition[:-1]
                     string_tmp[write_zoomlevel]+=(indentation_level-1)*tab+'else(no)'+'\n'+indentation_level*tab+'if ('+string_condition+' ?) then (yes)'+'\n'
                  indentation_level+=1  
@@ -667,20 +676,20 @@ def process_find_functions(node):
              
              #look for an annotated action and set zoomlevel if found
              for zoom_it2 in range(0,diagram_zoomlevel+1):
-                anycomment = regexActionComment(zoom_it2).match(line)
-                if anycomment:
+                anyactionannotation = regexActionComment(zoom_it2).match(line)
+                if anyactionannotation:
                    write_zoomlevel=zoom_it2
                    break
              #look for highlight annotation
              comment_highlight = regexHighlightComment.match(line)
              #actions
-             if anycomment:
+             if anyactionannotation:
                       #this line continues a previous multi-line action annotation
                       if lastcommentlinematched[write_zoomlevel] == i-1:
-                         last_comment_str[write_zoomlevel]+='\\n'+anycomment.group('action')
+                         last_comment_str[write_zoomlevel]+='\\n'+anyactionannotation.group('action')
                       #first line of action annotation
                       else:
-                            write_last_comment(write_zoomlevel, diagram_zoomlevel)
+                            write_last_comment(write_zoomlevel)
                             #new comment at the given zoom level                        
                             inside_comment[write_zoomlevel]=True
                             ##if <parallel>
@@ -703,8 +712,7 @@ def process_find_functions(node):
                             #      flagparallelactions[0]=False
                             #      flagparallelactions[1]=None 
                             #add line to current action annotation
-                            last_comment_str[write_zoomlevel] += anycomment.group('action')
-                            print('last_comment_str:',write_zoomlevel, last_comment_str[write_zoomlevel])
+                            last_comment_str[write_zoomlevel] += anyactionannotation.group('action')
 
                       lastcommentlinematched[write_zoomlevel] = i 
              
@@ -717,7 +725,7 @@ def process_find_functions(node):
                     scan_column_end=1+comment_highlight.end('commandline')-1
                     scan_file= infile_clang
                     scan_line=i
-                    print ('CALLS: ',scan_file,scan_line,scan_column_start,scan_column_end)
+                    #print ('CALLS: ',scan_file,scan_line,scan_column_start,scan_column_end)
                     singlelinecallsdefArray = find_calls(scan_file,scan_line,scan_column_start,scan_column_end)
                     #for it4 in singlelinecallsdefArray:
                        #print ('singlelinecallsdefArray',it4.displayname.decode("utf-8"))
@@ -764,7 +772,7 @@ def process_find_functions(node):
                       add_note("possible STOP")
                           
                           
-        write_last_comment(0, diagram_zoomlevel)
+        write_last_comment(0)
         string+= '\n@enduml'
         #print (string)
         
@@ -778,12 +786,13 @@ def process_find_functions(node):
 #finds the functions to process. TO DO: It should be updated after build_db.py and method lookfor_ActionComment_in_node(nodeIN,zoom) have been included
 def find_functions(node):
 
+  global relevant_folder
   if node.kind.is_declaration():
      #8 is a function and 21 is c++ class method
     if node.kind.value== 8 or node.kind.value==21:
-       #if os.path.dirname(node.location.file.name.decode("utf8")) == './src':
+       if os.path.dirname(node.location.file.name.decode("utf8")) == relevant_folder:
          process_find_functions(node)
-       #return
+       return
   
   # Recurse for children of this node
   for c in node.get_children():
@@ -794,12 +803,17 @@ def find_functions(node):
 
 index = clang.cindex.Index.create()
 #tu = index.parse(sys.argv[1])
-args=["-c","-x","c++","-Wall","-ansi","-I./include"]
+args=["-c","-x","c++","-Wall","-ansi"]
+if len(sys.argv)>=2:
+   args+=sys.argv[2:]   
 #tu = index.parse("./src/t.cpp",args)
 #tu_aux1=index.parse("./include/t.h",args, None, 2)
 #tu_aux2=index.parse("./src/t.cpp",args)
 tu = index.parse(sys.argv[1],args)
 print ('Translation unit:', tu.spelling.decode("utf-8"))
+relevant_folder=os.path.dirname(tu.spelling.decode("utf-8"))
+for diagnostic in tu.diagnostics:
+  print(diagnostic)
 #global variable for the name of the input file. It will be defined later on.
 infile_str=''
 find_functions(tu.cursor)

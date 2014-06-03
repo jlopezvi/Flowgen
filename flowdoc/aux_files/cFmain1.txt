@@ -5,8 +5,11 @@ start
 :#84add6:ask user whether to proceed;
 
 if (control_flag == 1  ?) then(yes)
-   :#b2cce5:call shower;
+   :#b2cce5:call shower\n--------\nVOID VINCIAPARENT::shower() -- [[source1.html#cCVINCIAPARENTFshower link]]\n;
 else(no)
+   if (0 == 0  ?) then (yes)
+   else(no)
+   endif
 endif
 
 
