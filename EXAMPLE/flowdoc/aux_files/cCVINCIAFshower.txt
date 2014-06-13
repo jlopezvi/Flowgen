@@ -1,0 +1,9 @@
+@startuml
+
+start
+ skinparam activityBackgroundColor #white 
+:#84add6:do VINCIA parton shower;
+
+stop
+
+@enduml

@@ -100,6 +100,9 @@ for diagnostic in tu.diagnostics:
   print(diagnostic)
 infile_str=os.path.splitext(os.path.basename(sys.argv[1]))[0]
 #print (infile_str)
+if not os.path.exists('flowdoc/aux_files/'):
+   print('CREATING FOLDER flowdoc/aux_files/')
+   os.makedirs('flowdoc/aux_files/')
 writefunc = open('flowdoc/aux_files/'+infile_str+'.flowdb',"w")
 find_functions(tu.cursor)
 writefunc.close()
