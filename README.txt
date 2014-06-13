@@ -1,6 +1,4 @@
-SOFTWARE PREREQUISITES:
-
-Flowgen software requirements:
+FLOWGEN SOFTWARE PREREQUISITES:
 
 • Python3 
 http://www.python.org/getit/
@@ -35,7 +33,7 @@ $LD_LIBRARY_PATH=user_path_to_llvm/build/Release+Asserts/lib
 
 
 ===========
-RUNNING THE PROGRAM
+RUNNING FLOWGEN
 
 There is an example in the directory EXAMPLE, with some C++ code. The makefile is already configured to run Flowgen simply by typing
 > make flowdoc
