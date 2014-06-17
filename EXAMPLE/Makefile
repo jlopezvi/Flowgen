@@ -2,7 +2,11 @@
 # === UPDATE FLOWGEN DOCUMENTATION ===
 #----------------------------------------------------------------------
 
+#default compiler (to compile the program, Flowgen ignores this: it does always use Clang via the Python bindings)
+CXX=g++
+#Flowgen folder
 FLOWGEN_DIR=../
+
 CCSOURCEFILES := $(shell ls src/*.cpp)
 FLOWHTML_FROMCCSOURCEFILES := $(shell ls src/*.cpp | sed s/"src\/"/"flowdoc\/"/)
 FLOWDBS_FROMCCSOURCEFILES := $(shell ls src/*.cpp | sed s/"src\/"/"flowdoc\/aux_files\/"/)
@@ -21,9 +25,14 @@ FLOWDBS:= $(FLOWDBS_FROMCCSOURCEFILES:.cpp=.flowdb) flowdoc/aux_files/simple_dem
 #	@echo "a"
 
 all: flowdoc a.out
-	
+
+#compiles the sample program	
 a.out: simple_demo_src.cpp src/source1.cpp Makefile
-	g++ simple_demo_src.cpp src/source1.cpp -I./include
+	$(CXX) simple_demo_src.cpp src/source1.cpp -I./include
+
+#generates the documentation			
+flowdoc: simple_demo_src.cpp src/*.cpp $(FLOWDBS) $(FLOWHTML) Makefile flowdoc/aux_files/runphase 
+	@echo "Hopla! Finished flowdoc creation. Check flowdocs."
 	
 flowdoc/aux_files/%.flowdb : src/%.cpp simple_demo_src.cpp $(FLOWGEN_DIR)build_db.py
 	@echo "cpp-to-flowdb: preprocessing"
@@ -41,6 +50,4 @@ flowdoc/%.html : flowdoc/aux_files/%.flowdb $(FLOWGEN_DIR)makehtml.py flowdoc/au
 	@echo "to-html: processing $^ to make $@"
 	python3 $(FLOWGEN_DIR)makehtml.py simple_demo_src.cpp
 	python3 $(FLOWGEN_DIR)makehtml.py src/source1.cpp
-			
-flowdoc: simple_demo_src.cpp src/*.cpp $(FLOWDBS) $(FLOWHTML) Makefile flowdoc/aux_files/runphase 
-	@echo "Hopla! Finished flowdoc creation. Check flowdocs."
+
