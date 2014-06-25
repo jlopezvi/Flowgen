@@ -2,10 +2,14 @@
 
 start
  skinparam activityBackgroundColor #white 
-:#84add6:do VINCIA parton shower;
+partition #84add6 "do VINCIA parton shower"{
+
+partition « inside » {
 :#b2cce5:1) prepare system of partons;
 :#b2cce5:2) do phase 1 of shower;
 :#b2cce5:3)...;
+}
+}
 
 stop
 
