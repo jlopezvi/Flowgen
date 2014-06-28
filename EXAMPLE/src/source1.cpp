@@ -15,5 +15,6 @@ std::cout << "the parton shower code would go here";
 
 //$1 3)...
 
+    //$2 subaction
 return;
 };
