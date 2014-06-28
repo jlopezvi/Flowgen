@@ -32,20 +32,48 @@ def get_referenced(self):
 clang.cindex.Cursor.get_referenced = get_referenced
 
 
-#looks for an annotated action comment inside the extent of a given node (zoom level modifies the type of action comment)
-def lookfor_ActionComment_in_node(nodeIN,zoom):
-    #action level 0
-    regextextActionComment=    r'^\s*//\$(?!\s+\[)\s+(?P<action>.+)$'
-    #action level 1
-    regextextActionComment1=   r'^\s*//\$1(?!\s+\[)\s+(?P<action>.+)$'
-    #action level 0 and 1
-    #regextextAnyActionComment1=r'^\s*//\$1?(?!\s+\[)\s+(?P<action>.+)$'
+#looks for an action comment inside the extent of a given node (write_zoomlevel <= diagram_zoom)
+def lookfor_ActionComment_in_node(nodeIN,diagram_zoom):
     
-    #regex selection according to zoom
+    def regexActionComment(zoom):
+       if zoom==0:
+          zoom=''  
+       regextextActionComment_zoom=r'^\s*//\$'+str(zoom)+r'(?!\s+\[)\s+(?P<action>.+)$'
+       return re.compile(regextextActionComment_zoom)       
+
+    infile_str=nodeIN.location.file.name.decode("utf-8")
+    infile= open(infile_str,'r')            
+    start_line=nodeIN.extent.start.line
+    end_line=nodeIN.extent.end.line
+    enum_file=list(enumerate(infile,start=1))      
+    infile.close()
+    
+    #loop over zoom levels, first the lowest
+    for it_zoom in range(0,diagram_zoom+1):
+       #loop over source code lines
+       for i, line in enum_file:
+          if i in range(start_line,end_line):
+             if regexActionComment(it_zoom).match(line):
+                 lookfor_ActionComment_in_node.write_zoomlevel=it_zoom
+                 return True   
+    lookfor_ActionComment_in_node.write_zoomlevel=None
+    return False
+    
+#looks for an annotated action comment inside the extent of a given node (zoom level modifies the type of action comment)
+def lookfor_actionAnnotation_inNode(nodeIN,zoom):
+
     if zoom==0:
-      regexToUse=re.compile(regextextActionComment)
-    elif zoom==1:
-      regexToUse=re.compile(regextextActionComment1)
+      zoom=''  
+    regextextActionComment=r'^\s*//\$'+str(zoom)+r'(?!\s+\[)\s+(?P<action>.+)$'
+    regexToUse=re.compile(regextextActionComment)
+    
+    ##action level 0
+    #regextextActionComment=    r'^\s*//\$(?!\s+\[)\s+(?P<action>.+)$'
+    ##action level 1
+    #regextextActionComment1=   r'^\s*//\$1(?!\s+\[)\s+(?P<action>.+)$'
+    ##action level 0 and 1
+    ##regextextAnyActionComment1=r'^\s*//\$1?(?!\s+\[)\s+(?P<action>.+)$'
+
           
     infile_str=nodeIN.location.file.name.decode("utf-8")
     infile= open(infile_str,'r')            
@@ -71,10 +99,12 @@ def find_functions(node):
     if node.kind.value== 8 or node.kind.value==21:
        if os.path.dirname(node.location.file.name.decode("utf8")) == relevant_folder:
          #print(node.location.file.name.decode("utf8"))         
-         if lookfor_ActionComment_in_node(node,0):
+         if lookfor_actionAnnotation_inNode(node,0):
             zoom_str='0'
-            if lookfor_ActionComment_in_node(node,1):
+            if lookfor_actionAnnotation_inNode(node,1):
                zoom_str='1'  
+               if lookfor_actionAnnotation_inNode(node,2):
+                  zoom_str='2'
             classname = ''
             if node.kind.name=='CXX_METHOD':
                classname= str(node.semantic_parent.spelling.decode("utf-8"))+'::'

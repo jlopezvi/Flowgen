@@ -21,12 +21,15 @@ reader = csv.reader(open('flowdoc/aux_files/'+infile_str+'.flowdb', "rt", encodi
 for row in reader:
   usr_key=''.join(e for e in row[0] if e.isalnum())
   for i in range(int(row[1])+1):
-    print(range(1))
+    #print(range(1))
     zoomID=''
     zoom_str=''
     if i==1:
       zoomID='1'
-      zoom_str='  -- zoom 1'    
+      zoom_str='  -- zoom 1'
+    if i==2:
+      zoomID='2'
+      zoom_str='  -- zoom 2'  
     htmloffline_str+="<p>"+row[2]+zoom_str+"</p>"+"""<a name="#"""+usr_key+zoomID+""""></a>"""
     if os.path.exists('flowdoc/aux_files/'+usr_key+zoomID+'.cmapx'):
         htmloffline_str+= """<img src="aux_files/"""+usr_key+zoomID+""".png" """    
