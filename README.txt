@@ -14,6 +14,11 @@ http://clang.llvm.org/
 https://github.com/kennytm/clang-cindex-python3
 
 
+ACKNOWLEDGMENTS:
+=====
+Thanks to the PlantUML team, specially to Arnaud Roques; to cldoc’s developer, Jesse Van Den Kieboom; and to the big LLVM+Clang developer community.
+This tool would not be possible without them.
+
 
 INSTALLATION:
 =====
@@ -52,7 +57,7 @@ Choose the option 'Add LLVM to system PATH for all users’
 
 
 
-CONFIGURING AND RUNNING FLOWGEN
+CONFIGURING AND RUNNING FLOWGEN:
 =====
 
 There is an example in the folder EXAMPLE, with some C++ code. 
@@ -75,3 +80,6 @@ The //$ annotations and the code can be changed in the test C++ code to experime
 Set FLOWGEN_DIR environment variable to the FLOWGEN folder
 The make batch file ‘make_WIN.bat’ is configured to run the example
 The documentation is generated as .html files inside flowdoc/
+
+
+
