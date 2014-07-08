@@ -129,28 +129,28 @@ def write_txt(string,outfile_str):
 
    
 #finds calls in a source code line that has been annotated with //$ at the end
-#the algorithm is based on the fact that call nodes are only associated to the '(' ')' of the source code line 
-#several calls in the same line can be displayed. NOTE: calls inside calls are not displayed!
+#call nodes are only associated to the characters '(' ',' ')' of the source code line 
+#there can also be variables whose definition involves a call. These kind of calls are also picked up.
+#several different calls in the same line can be identified. 
+#TO DO: identify calls inside other calls!
 #CXXMemberCallExpr: call to a member method
 #CallExpr: call to a function
 def find_calls(scan_fileIN,scan_lineIN,scan_column_startIN,scan_column_endIN):
-  
-  singlelinecallsArrayIN=[]
-  callfoundXtimesArray=[]
+
   singlelinecallsdefArrayIN=[]
     
   for it in range(scan_column_startIN,scan_column_endIN):
      
     loc=clang.cindex.SourceLocation.from_position(tu,scan_fileIN,scan_lineIN,it)
     scan_node=clang.cindex.Cursor.from_location(tu,loc)
-    #print('scannode ',scan_node.kind.name)    
-    #call found?
-    #DECL_REF_EXPR (101) is an expression that refers to some value declaration, such as a function, varible, or enumerator
+    #print('position',it,'scannode ',scan_node.kind.name)    
+    #call or variable found?
+    #DECL_REF_EXPR (101) is an expression that refers to some value declaration, such as a function, variable, or enumerator (use node.get_referenced())
     referencefound = (scan_node.kind.name=='DECL_REF_EXPR')
     #CALL_EXPR (103) is a call
     callfound = (scan_node.kind.name=='CALL_EXPR')
     
-    #DECL_REF_EXPR (101) --> we look for its definition, it should be a VAR_DECL (9) --> we look for its children, there should be a CALL_EXPR (103)
+    #DECL_REF_EXPR (101) --> we look for its definition (in the same source file!), it should be a VAR_DECL (9) --> we look for its children, there should be a CALL_EXPR (103)
     if referencefound and scan_node.get_definition():
       #print ('reference found')
       if scan_node.get_definition().kind.name == 'VAR_DECL': 
@@ -160,50 +160,20 @@ def find_calls(scan_fileIN,scan_lineIN,scan_column_startIN,scan_column_endIN):
            if it9.kind.value==103:
               if it9.get_definition() not in singlelinecallsdefArrayIN:
                    singlelinecallsdefArrayIN.append(it9.get_definition())
-                      
-    elif callfound:
+    
+    #CALL_EXPR (103) is a call  --> it is better to use the node_call.get_referenced() but this may not be defined (we throw a WARNING in this case)
+    #Note: apparently node_call.get_definition() is not defined.                 
+    elif callfound:        
         #print ('call found')
-        #call already registered?
-        alreadyregistered=False
-        for it1 in singlelinecallsArrayIN:
-           #call already registered
-           if it1 == scan_node:
-              #print ('call already registered')
-              idx=singlelinecallsArrayIN.index(it1)
-              callfoundXtimesArray[idx]+=1
-              alreadyregistered=True
-              break        
-        #call not registered
-        if not(alreadyregistered):
-           #print ('call not registered')
-           #are we inside another call?
-           insidecall=False
-           for it2 in callfoundXtimesArray:
-              #we are inside another call
-              if it2==1:
-                 #print ('insidecall')
-                 insidecall=True
-                 break
-           #we are not inside another call      
-           if not(insidecall):
-              #print ('not inside another call')
-              #register call              
-              singlelinecallsArrayIN.append(scan_node)
+        if scan_node not in singlelinecallsdefArrayIN:
+           if scan_node.get_referenced():  
+              singlelinecallsdefArrayIN.append(scan_node.get_referenced())
+              #print ('registered call: getreferenced ',scan_node.get_referenced().kind.name, scan_node.get_referenced().displayname, 'USR', scan_node.get_referenced().get_usr())
+              #print ('registered call: getdefinition ',scan_node.get_definition().kind.name, scan_node.get_definition().displayname, 'USR')              
+           else:
+              print ('WARNING ',scan_node.spelling, ": No get_referenced for the cursor")
+              singlelinecallsdefArrayIN.append(scan_node)             
               #print ('registered call:', scan_node.kind.name, scan_node.extent, scan_node.displayname.decode("utf-8"), 'USR', scan_node.get_usr())
-              #print ('registered call: getreferenced ',scan_node.get_referenced().kind.name, scan_node.get_referenced().displayname, 'USR', scan_node.get_referenced().get_usr())              
-              ##print ('registered call: getdefinition ',scan_node.get_definition().kind.name, scan_node.get_definition().displayname, 'USR', scan_node.get_definition().get_usr())
-              callfoundXtimesArray.append(1)
-        
-  for it3 in callfoundXtimesArray:
-     if it3>2:
-          print ('ERROR, ERROR, ERROR, bad algorithm in find_calls \n')
-  #fill in the Array with the call.get_referenced(), rather than the direct calls, to avoid repetitions
-  for it4 in singlelinecallsArrayIN:
-      if it4.get_referenced():
-        if it4.get_referenced() not in singlelinecallsdefArrayIN:
-           singlelinecallsdefArrayIN.append(it4.get_referenced())           
-      else:
-        print ("No reference for the cursor")
    
   return singlelinecallsdefArrayIN  
   
@@ -481,17 +451,19 @@ def process_find_functions(node,MAX_diagram_zoomlevel):
                 last_comment_str[write_zoomlevelIN]=indentation_level*tab+':'+color(write_zoomlevelIN)+':'+last_comment_str[write_zoomlevelIN]+';\n'   
                 #write extra if there are calls
                 if actioncallsdefArray:
-                   last_comment_str[write_zoomlevelIN]=last_comment_str[write_zoomlevelIN][:-2]+"\\n--------\\n"
+                   last_comment_str[write_zoomlevelIN]=last_comment_str[write_zoomlevelIN][:-2]+"\n----"
                    for it7 in actioncallsdefArray:
-                      #print('LOOKING IF CALLS EXIST:',it7.kind.name, it7.get_definition(),it7.location)
+                      usr_id_str= str(it7.get_usr().decode("utf-8"))
+                      usr_id_str = ''.join(e for e in usr_id_str if e.isalnum())
+                      classname = ''
+                      if it7.kind.name=='CXX_METHOD':
+                        classname= str(it7.semantic_parent.spelling.decode("utf-8"))+'::'                      
                       if read_flowdbs(it7.get_usr().decode("utf8")):
                         call_in_filename_str=read_flowdbs.file+'.html'
-                        usr_id_str= str(it7.get_usr().decode("utf-8"))
-                        usr_id_str = ''.join(e for e in usr_id_str if e.isalnum())
-                        classname = ''
-                        if it7.kind.name=='CXX_METHOD':
-                           classname= str(it7.semantic_parent.spelling.decode("utf-8"))+'::'
-                        last_comment_str[write_zoomlevelIN]+=str(it7.result_type.kind.name)+' '+classname+str(it7.displayname.decode("utf-8"))+' -- [['+call_in_filename_str+'#'+usr_id_str+' link]]'+'\\n'
+                        last_comment_str[write_zoomlevelIN]+='\n'+str(it7.result_type.kind.name)+' '+classname+str(it7.displayname.decode("utf-8"))+' -- [['+call_in_filename_str+'#'+usr_id_str+' link]]'
+                      else:
+                        last_comment_str[write_zoomlevelIN]+='\n'+str(it7.result_type.kind.name)+' '+classname+str(it7.displayname.decode("utf-8"))
+                        
                         #last_comment_str+=str(it7.result_type.kind.name)+' '+str()+str(it7.displayname.decode("utf-8"))+' -- [[http://www.google.es]]'+'\\n'
                    last_comment_str[write_zoomlevelIN]+=';\n'
                 #write extra if there are notes
@@ -770,7 +742,7 @@ def process_find_functions(node,MAX_diagram_zoomlevel):
                     scan_column_end=1+comment_highlight.end('commandline')-1
                     scan_file= infile_clang
                     scan_line=i
-                    #print ('CALLS: ',scan_file,scan_line,scan_column_start,scan_column_end)
+                    print ('CALLS: ',scan_file,scan_line,scan_column_start,scan_column_end)
                     singlelinecallsdefArray = find_calls(scan_file,scan_line,scan_column_start,scan_column_end)
                     #for it4 in singlelinecallsdefArray:
                        #print ('singlelinecallsdefArray',it4.displayname.decode("utf-8"))

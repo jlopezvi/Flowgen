@@ -1,49 +1,65 @@
 FLOWGEN SOFTWARE PREREQUISITES:
+=====
 
 • Python3 
 http://www.python.org/getit/
 
-• PlantUML (it is already provided, NO need to install)
+• PlantUML (already provided; NO need to install)
 http://plantuml.sourceforge.net/
 
-• LLVM-Clang 3.4 (or superior) from the SVN repository and change Python2 bindings to Python3 bindings.
+• LLVM-Clang 3.1 (or superior) 
+http://clang.llvm.org/
 
-
-[FOR MAC]
-
-Follow the instructions on 
-http://clang.llvm.org/get_started.html 
-in order to
-- checkout LLVM
-- checkout clang
-Then (optionally) use, before configuring:
-> export CC=you_favorite_C_compiler
-> export CXX=your_favorite_C++_compiler
-[ Explanation: Clang needs to be compiled with a external compiler, and in this way the user has control over the compiler that will be used. ]
-Now configure the package with the --enable-optimized flag:
-> configure --enable-optimized
-> make
-
-Then overwrite the python2 binding libraries with the python3 version via simple copy-paste 
+• Clang-Python3 bindings (already provided+fixed some bugs; NO need to install)
 https://github.com/kennytm/clang-cindex-python3
-in the corresponding directory
-user_path_to_llvm/llvm/tools/clang/bindings/python
 
-If not set already, set the environment variables: 
-$PYTHONPATH=user_path_to_llvm/llvm/tools/clang/bindings/python/
-(the previous path points to the sources of llvm)
-$LD_LIBRARY_PATH=user_path_to_llvm/build/Release+Asserts/lib
-(the previous path points to the built llvm system. To get the folder Release+Asserts one does need to use the --enable-optimized flag when configuring)
+
+
+INSTALLATION:
+=====
+
+[FOR UNIX-LIKE SYSTEMS: MAC/LINUX]
+
+- Install Python3 (if not present)
+
+- Install LLVM+Clang 3.1 (or superior). 
+
+For MAC, you may try using a package management solution such as MacPorts or Fink.
+For Linux (type?), you may try using a package management solution such as…
+
+LLVM+Clang pre-built binaries are available from
+http://llvm.org/releases/download.html
+
+After installation, the environment variable
+$LD_LIBRARY_PATH=path_to_llvm/lib
+pointing to the libraries should have been set, or it can be set manually.
+That folder contains required library files such as "libclang.dylib". 
+
+- Download Flowgen from GitHub.
 
 
 [FOR WINDOWS]
-...
+
+- Install Python3 (if not present)
+
+- Install LLVM+Clang 3.1 (or superior). 
+
+Prebuilt binaries available (3.4 or superior) from
+http://llvm.org/releases/download.html
+Choose the option 'Add LLVM to system PATH for all users’
+
+- Download Flowgen from GitHub.
 
 
-===========
-RUNNING FLOWGEN
 
-There is an example in the directory EXAMPLE, with some C++ code. The makefile is configured to either compile the program, by typing
+CONFIGURING AND RUNNING FLOWGEN
+=====
+
+There is an example in the folder EXAMPLE, with some C++ code. 
+
+[FOR UNIX-LIKE SYSTEMS: MAC/LINUX]
+
+The makefile is configured to either compile the sample program, by typing
 > make a.out
 or to run Flowgen and generate the documentation, by typing
 > make flowdoc
@@ -54,3 +70,8 @@ Note: it may be necessary to adjust the variables FLOWGEN_DIR and CXX to run the
 
 The //$ annotations and the code can be changed in the test C++ code to experiment with Flowgen.
 
+[FOR WINDOWS]
+
+Set FLOWGEN_DIR environment variable to the FLOWGEN folder
+The make batch file ‘make_WIN.bat’ is configured to run the example
+The documentation is generated as .html files inside flowdoc/
