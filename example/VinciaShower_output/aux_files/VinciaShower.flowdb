@@ -1,0 +1,4 @@
+c:@N@Vincia@C@VinciaShower@F@pTnext#&$@N@Pythia8@C@Event#d#d#	1	DOUBLE VinciaShower::pTnext(Pythia8::Event &, double, double)
+c:@N@Vincia@C@VinciaShower@F@branch#&$@N@Pythia8@C@Event#b#	0	BOOL VinciaShower::branch(Pythia8::Event &, bool)
+c:@N@Vincia@C@VinciaShower@F@acceptTrial#&1$@N@Pythia8@C@Event#	1	BOOL VinciaShower::acceptTrial(const Pythia8::Event &)
+c:@N@Vincia@C@VinciaShower@F@generateKinematics#	2	BOOL VinciaShower::generateKinematics()

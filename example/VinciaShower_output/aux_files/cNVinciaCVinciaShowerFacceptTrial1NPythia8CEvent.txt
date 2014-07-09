@@ -1,0 +1,42 @@
+@startuml
+
+start
+ skinparam activityBackgroundColor #white 
+:#84add6:Can we veto the trial without calculating an accept probability?;
+note right
+possible STOP
+possible STOP
+possible STOP
+end note
+:#84add6:Check if the pre- and post-branching configurations can be treated\nas being relativistic (massless), if yes create massless configuration;
+:#84add6:Call antenna function (dimensionless)
+----
+DOUBLE AntennaSet::antennaFunctionProto(const Vincia::EventHandler *, double, double, double, double, double, int, int, int, int, int);
+:#84add6:Calculate phase space volume factor due to parent masses;
+:#84add6:Apply colour factor;
+:#84add6:Compute Pimp modification (only applied to global showers);
+:#84add6:Compute pAri modification (only applied to global showers);
+:#84add6:Determine alphaS;
+:#84add6:Calculate pdf ratio;
+:#84add6:Calculate trial weight;
+:#84add6:Calculate accept probability pAccept (before matching);
+:#84add6:Choose helicities for daughter particles\n(so far only for massless polarized shower);
+:#84add6:Check whether we match at this order;
+:#84add6:Check whether to impose matching scale, if yes determine it;
+
+if (do we match?) then(yes)
+   :#84add6:Get matching coefficients;
+else(no)
+endif
+
+:#84add6:Determine NLO K-factor variation (if not doing explicit NLO matching);
+:#84add6:Limit uncertainty to factor 2.0 for first branching, to\ncapture possibly large finite term differences, then level off at\n20% asymptotically, to capture multiple-emission uncertainties.;
+:#84add6:Accept heavy quark conversion at threshold by fiat;
+:#84add6:Accept or Reject Trial Emission;
+note right
+possible STOP
+end note
+
+stop
+
+@enduml

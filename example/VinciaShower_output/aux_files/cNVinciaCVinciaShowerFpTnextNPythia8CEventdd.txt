@@ -1,0 +1,21 @@
+@startuml
+
+start
+ skinparam activityBackgroundColor #white 
+:#84add6:Check for reasons not to do anything;
+note right
+possible STOP
+end note
+:#84add6:For strong ordering, ensure our starting scale is below all old scales;
+:#84add6:Get trial scale for each antenna, the highest one is our branching scale;
+
+if (check whether branching scale is above stopping scale) then(yes)
+else(no)
+   :#84add6:Do cleanup since the shower will stop;
+endif
+
+:#84add6:End of pTnext: finalize and return to PYTHIA;
+
+stop
+
+@enduml

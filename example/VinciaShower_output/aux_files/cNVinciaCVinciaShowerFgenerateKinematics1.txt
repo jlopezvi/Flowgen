@@ -1,0 +1,27 @@
+@startuml
+
+start
+ skinparam activityBackgroundColor #white 
+:#84add6:Return if the trial is outside the physical phase space;
+note right
+possible STOP
+end note
+partition #84add6 "Check hadronization veto(s) 1: hadronization cutoff & meson masses\nNote: here only check branching invariants. Invariants with respect\nto neighbors can optionally be checked after the branching kinematics\nhave been fully defined, below." {
+:#b2cce5:Require all color-connected invariants at least above lowest\nphysical meson mass;
+note right
+possible STOP
+possible STOP
+possible STOP
+possible STOP
+end note
+}
+:#84add6:Generate full kinematics for this trial branching;
+note right
+possible STOP
+possible STOP
+possible STOP
+end note
+
+stop
+
+@enduml

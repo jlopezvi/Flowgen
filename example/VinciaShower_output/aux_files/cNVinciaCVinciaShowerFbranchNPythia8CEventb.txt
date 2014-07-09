@@ -1,0 +1,24 @@
+@startuml
+
+start
+ skinparam activityBackgroundColor #white 
+:#84add6:select daughter invariants and flavours, initialize proto-state;
+:#84add6:Perform consistency check;
+note right
+possible STOP
+end note
+:#84add6:GENERATE FULL TRIAL KINEMATICS (AND REJECT IF OUTSIDE PHASE SPACE)\n(includes hadronization vetos which only need the daughter kinematics);
+note right
+possible STOP
+end note
+:#84add6:VETO STEP: DECIDE WETHER TO ACCEPT OR REJECT BRANCHING;
+note right
+possible STOP
+end note
+:#84add6:ASSIGN COLOUR FLOW
+----
+BOOL EventHandler::branch(Pythia8::Event &);
+
+stop
+
+@enduml

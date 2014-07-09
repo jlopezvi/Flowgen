@@ -44,38 +44,16 @@
       <tr>
           <td valign="top"> 
           <h5>Source code</h5>
-            bool VinciaShower::acceptTrial(Event& event) {
-    
-    int iTrial     = winnerPtr->getTrialIndex(); <br>
-    int iAntPhys   = winnerPtr->getPhysIndex(iTrial); <br>
-    bool isSwapped = winnerPtr->getIsSwapped(iTrial); <br>
-    <br>
-    double qNew  = winnerPtr->getTrialScale(iTrial); <br>
-    double mAnt  = winnerPtr->m(); <br>
-    double sAnt  = winnerPtr->s(); <br>
-    <br>
-    //$ Mark this trial as "used", will need to generate a new one. <br>
-    winnerPtr->renewTrial(iTrial);<br>
-    <br>
-    //$1 Count up total number of trials <br>
-    ++nTrialsSum; <br>
-    
-    //************************************************* <br>
-    //$ Generate zeta variable, then work out y12, y23 <br>
-    //************************************************* <br>
-    <br>
-    double y12, y23; <br>
-    bool pass = winnerPtr->genTrialInvariants(y12, y23, iTrial);   //$ <br>
-    //$1 [trial invariants are not in the good region of P.S.]   <br>  
-    if (! pass) {   //$ <br>
+
  
-      <br>
-          <a href="docs/VinciaShower_annotated_v20082013.cc">See the complete file (.cc, text file)</a>          
+          <br>
+          <a href="example/VinciaShower.cc">See the complete file (VinciaShower.cc, text file)</a>          
           </td>
           
           <td valign="top">
           <h5>Flowcharts (activity diagrams)</h5>
-          <a href="images/boolVinciaShowerAcceptTrial.png"><img src="images/boolVinciaShowerAcceptTrial.png" alt="image" width=400 /></a>
+          <br>
+          <a href="example/VinciaShower_output/VinciaShower.html">See diagrams corresponding to VinciaShower.cc</a>
           </td>
        </tr>
        </table>
