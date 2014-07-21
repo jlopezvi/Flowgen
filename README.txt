@@ -70,8 +70,10 @@ or to run Flowgen and generate the documentation, by typing
 > make flowdoc
 The documentation is generated as .html files inside flowdoc/
 
-Note: type ‘make’ to do both actions at the same time.
-Note: it may be necessary to adjust the variables FLOWGEN_DIR and CXX to run the makefile.
+Note: erase the folder flowdoc/ to regenerate completely the documentation.
+Note: it may be necessary to adjust the variables FLOWGEN_DIR and CXX to run the makefile. 
+Note: type ‘make’ to do both actions (compiling and generating documentation) in the same run.
+Note [MAC SPECIFIC]: by default, makefiles are not recognized on Mac systems. In order to check, you can do 'make --version'. If it says: ‘-bash: make: command not found’, then you should install it. The easiest is to install the xCode addition to Mac OS X. 
 
 The //$ annotations and the code can be changed in the test C++ code to experiment with Flowgen.
 
@@ -81,5 +83,6 @@ Set FLOWGEN_DIR environment variable to the FLOWGEN folder
 The make batch file ‘make_WIN.bat’ is configured to run the example
 The documentation is generated as .html files inside flowdoc/
 
+The //$ annotations and the code can be changed in the test C++ code to experiment with Flowgen.
 
 
