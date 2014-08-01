@@ -1,0 +1,24 @@
+- New visualization for different zoom levels in the html with tabs.
+
+- Templates
+- Headers
+
+- parallel
+- elseifNum—>elseifIdx, elseifNumNested—>elseifIdxNested
+- implement elseif for nested if statements
+- zoomlevel_beforeifstmt (keep for after the ifstmt)
+
+- calls inside conditions of if statements
+
+
+- if statement description of conditions of more than two lines
+- loops —> while loop
+
+- overloaded methods
+- line numbers
+- merging with Doxygen.
+- Including functions description
+
+
+- if statement descriptions for several zooms
+-  ignore zoom level in description //$1 []
