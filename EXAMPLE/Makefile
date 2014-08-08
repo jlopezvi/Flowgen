@@ -48,6 +48,7 @@ flowdoc/aux_files/runphase: $(CCSOURCEFILES) simple_demo_src.cpp $(FLOWGEN_DIR)m
 	
 flowdoc/%.html : flowdoc/aux_files/%.flowdb $(FLOWGEN_DIR)makehtml.py flowdoc/aux_files/runphase
 	@echo "to-html: processing $^ to make $@"
+	cp -r $(FLOWGEN_DIR)htmlCSSandJS/ flowdoc/htmlCSSandJS/
 	python3 $(FLOWGEN_DIR)makehtml.py simple_demo_src.cpp
 	python3 $(FLOWGEN_DIR)makehtml.py src/source1.cpp
 
