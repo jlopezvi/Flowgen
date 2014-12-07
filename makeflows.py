@@ -742,7 +742,7 @@ def process_find_functions(node,MAX_diagram_zoomlevel):
                     scan_column_end=1+comment_highlight.end('commandline')-1
                     scan_file= infile_clang
                     scan_line=i
-                    print ('CALLS: ',scan_file,scan_line,scan_column_start,scan_column_end)
+                    print ('LOOKING FOR CALLS AT: ',scan_file,scan_line,scan_column_start,scan_column_end)
                     singlelinecallsdefArray = find_calls(scan_file,scan_line,scan_column_start,scan_column_end)
                     #for it4 in singlelinecallsdefArray:
                        #print ('singlelinecallsdefArray',it4.displayname.decode("utf-8"))

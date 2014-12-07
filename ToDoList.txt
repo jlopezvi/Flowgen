@@ -1,4 +1,7 @@
-- New visualization for different zoom levels in the html with tabs.
+- Visualization of zoom levels: 1) Use HTML5  2) Introduce a scroll up-down in zoom level
+  3?) maybe same day, do a local zoom level (click on a part of the diagram to show the 
+  lower level details only of that part).
+- Adapt windows script make_WIN.bat to accept the CSS and JS files.
 
 - Templates
 - Headers
