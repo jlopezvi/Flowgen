@@ -60,7 +60,7 @@ for row in reader:
       if i==2:
         zoomID='2'
       htmloffline_str+="""
-        <li><a href="#view"""+zoomID+""" ">zoom"""+zoomID+"""</a></li>"""
+        <li><a href="#view"""+zoomID+'_'+usr_key+""" ">zoom"""+zoomID+"""</a></li>"""
     htmloffline_str+="""
       </ul>"""
     
@@ -73,7 +73,7 @@ for row in reader:
       if i==2:
         zoomID='2'
       htmloffline_str+="""
-        <div id="view"""+zoomID+""" ">"""
+        <div id="view"""+zoomID+'_'+usr_key+""" ">"""
       #if hyperlinks exist in the diagrams include them
       if os.path.exists('flowdoc/aux_files/'+usr_key+zoomID+'.cmapx'):
           htmloffline_str+= """<img src="aux_files/"""+usr_key+zoomID+""".png" """    

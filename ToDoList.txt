@@ -129,4 +129,52 @@ for (int i = 1; i < numberofevents; ++i) {
 }
 works fine!
 
+3. Bug. This code(below) produces error(below). If I replace $1 —> $ then it is OK. The problem is with the variable ‘write_zoomlevel’ that is not being initialized.
+
+
+  bool VinciaFSR::acceptTrial(Event& event, Branchelemental* trialPtr) {
+    
+    // Verbose output
+    if (verbose >= 7) {
+      printOut("VS::acceptTrial","begin --------------");
+    }
+
+    //***********************************************************************
+    //$1 Optional: start by checking section veto (if doing sector showers) 
+    //***********************************************************************
+ 
+    if (sectorShower) {
+      if (!sectorAccept(event,trialPtr)) {
+        if (verbose >= 5) printOut("VS::acceptTrial",
+                                   "Branching Vetoed. Failed sector veto.");
+        // Count up local and global failure rate due to hull and return false
+        trialPtr->nHull++;
+        ++nTrialsHull;
+        return false;
+      } else { 
+        if (verbose >= 7) printOut("VS::acceptTrial",
+                                   "Trial passed sector veto. Continuing...");
+      }    
+    }  
+    
+    //************************************************************************
+    //$ Check global hadronization veto(s) (requiring full event)
+
+
+Processing acceptTrial of kind CXX_METHOD [start_line=1986, end_line=2996. At "<File: b'src/VinciaFSR.cc'>"]
+Traceback (most recent call last):
+  File "/Users/jlopezvi/Flowgen/makeflows.py", line 841, in <module>
+    find_functions(tu.cursor)
+  File "/Users/jlopezvi/Flowgen/makeflows.py", line 822, in find_functions
+    find_functions(c)
+  File "/Users/jlopezvi/Flowgen/makeflows.py", line 822, in find_functions
+    find_functions(c)
+  File "/Users/jlopezvi/Flowgen/makeflows.py", line 816, in find_functions
+    process_find_functions(node,read_single_flowdb.max_diagram_zoomlevel)
+  File "/Users/jlopezvi/Flowgen/makeflows.py", line 792, in process_find_functions
+    add_note("possible STOP")
+  File "/Users/jlopezvi/Flowgen/makeflows.py", line 408, in add_note
+    string_notes[write_zoomlevel]+=stringIN+'\n'
+
+
 
