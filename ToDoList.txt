@@ -1,6 +1,7 @@
 C++ FEATURES:
 - Switch statements
 - Nested loops
+- Continue and break (depends on PlantUML)
 - Any depth of nested loops and if-statements.
 - Templates
 - Headers
@@ -112,22 +113,6 @@ translation_unit = index.parse("test.cc",["-I/home/archgoon/usr/local/lib/clang/
 This resulted in translation_unit.diagnostics being an empty list.
 —— 
 
-2. Bug in clang
-Clang cannot correctly parse the condition of a FOR-loop like:
-for (int event = 1; event < numberofevents; ++event) {    
-}
-The python code in Flown:
-string_condition = ' '.join(
-t.spelling.decode("utf-8") for t in list(node.get_children())[0].get_tokens())[:-1]+' '+' '.join(
-t.spelling.decode("utf-8") for t in list(node.get_children())[1].get_tokens())+' '+' '.join(
-t.spelling.decode("utf-8") for t in list(node.get_children())[2].get_tokens())[:-1]
-Displays:
-int event = 1; even event < numberofevents; ++event
-
-However, the FOR-loop:
-for (int i = 1; i < numberofevents; ++i) {    
-}
-works fine!
 
 3. Bug. This code(below) produces error(below). If I replace $1 —> $ then it is OK. The problem is with the variable ‘write_zoomlevel’ that is not being initialized.
 
