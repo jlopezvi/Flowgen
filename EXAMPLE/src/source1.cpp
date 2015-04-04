@@ -20,7 +20,7 @@ std::cout << "the parton shower code would go here";
 
 int numberofevents=10000;
 //FOR LOOP EXAMPLE
-for (int i = 1; i < numberofevents; ++i) {    
+//for (int i = 1; i < numberofevents; ++i) {    
 
   //$1 1) prepare system of partons
 
@@ -29,7 +29,7 @@ for (int i = 1; i < numberofevents; ++i) {
   //$1 3)...
 
       //$2 subaction
-}
+//}
 
 return;
 };

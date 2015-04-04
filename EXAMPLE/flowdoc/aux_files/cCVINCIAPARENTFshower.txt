@@ -2,7 +2,11 @@
 
 start
  skinparam activityBackgroundColor #white 
-:#84add6:DO-WHILE LOOP EXAMPLE;
+
+repeat
+   :#84add6:produce a new event;
+repeat while (showerflag == 1 ? )
+
 
 stop
 
