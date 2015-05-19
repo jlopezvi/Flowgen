@@ -39,24 +39,21 @@
     <div class="section"><h2>IF Statements<a name="Functions/Methods"></a></h2>
     <p>
     <tt>if</tt>-statement bifurcations in the flow are shown in the diagram when there are annotated actions inside. 
-    We can add user-defined conditions preceding or succeeding (<font color=red>not implemented</font>) the if- elseif- statements. We can also highlight the calls to functions/methods in the conditions <font color=red>[not implemented]</font>. Finally, there are zooming options <font color=red>[not implemented]</font>.
+    We can add user-defined conditions preceding the if- elseif- statements. We can also highlight the calls to functions/methods in the conditions <font color=red>[not implemented]</font>. Finally, there are zooming options <font color=red>[not implemented]</font>.
     </p>
 
     <div class="section"><h3>annotation<a name="annotation"></a></h3>
       <p>
-      a) preceding annotations:      
-      </p>
-      <p>
       <div class="source"><pre>
-      <font color="darkgreen">//$ [condition A]</font>      
-      if(conditionStatement) {  <font color="lightgreen"> //$</font>
+      <font color="darkgreen">//$ [condition A user-description]</font>      
+      if(conditionStatement A) {  <font color="lightgreen"> //$</font>
       //$ action 1
       code
       //$ action 2           
       code
       }
-      <font color="darkgreen">//$ [condition B]</font>
-      else if(conditionStatement) {  <font color="lightgreen">//$</font>
+      <font color="darkgreen">//$ [condition B user-description]</font>
+      else if(conditionStatement B) {  <font color="lightgreen">//$</font>
       //$ action 3
       code
       }
@@ -65,34 +62,11 @@
       }
       </pre></div>
       </p>
-      <p> 
-      b) succeeding annotations (<font color=red>not implemented</font>):
-      </p> 
-      <p>  
-      <div class="source"><pre>
-      if(conditionStatement) <font color="lightgreen"> //$</font>     
-      <font color="darkgreen">//$ [condition A]</font>
-      {
-      //$ action 1
-      code
-      //$ action 2           
-      code
-      }
-      else if(conditionStatement)  <font color="lightgreen">//$</font>
-      <font color="darkgreen">//$ [condition B]</font>
-      {
-      //$ action 3
-      code
-      }
-      else                                  
-      {
-      code
-      }
-      </pre></div>
-      </p>
       <p>
+      OPTIONAL:
+      <br>
       <font color="lightgreen">//$</font>:  forces displaying in the diagram the calls to functions/methods inside the conditionStatement<br>
-      <font color="darkgreen">//$  [condition A]</font>:  specifies the condition; the square brackets [ ] are required syntax
+      <font color="darkgreen">//$  [condition user-description]</font>:  specifies a user-description of the condition; the square brackets [ ] are required syntax
       </p>
       
     </div>

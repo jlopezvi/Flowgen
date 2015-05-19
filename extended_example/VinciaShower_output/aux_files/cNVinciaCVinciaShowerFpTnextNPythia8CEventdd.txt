@@ -16,6 +16,4 @@ endif
 
 :#84add6:End of pTnext: finalize and return to PYTHIA;
 
-stop
-
 @enduml

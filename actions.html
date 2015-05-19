@@ -36,7 +36,7 @@
   
     <div class="section"><h2>actions<a name="actions"></a></h2>
     <p>
-      The basic building blocks of an activity diagram (or flowchart) are <em>actions</em>, each a statement or sequence of statements in the code. Each action conceptually accomplishes a discrete task. A sequence of actions builds up an <em>activity</em>.
+      The basic building blocks of an activity diagram (or flowchart) are <em>actions</em>, each a statement or sequence of statements in the code. Each action conceptually accomplishes a discrete task. A sequence of actions builds up an <em>activity</em> (= function / class method).
 
       The actions, along with the level of detail to which they correspond (zoom level), are specified in the source code by the programmer.
       <br><br>
@@ -49,19 +49,15 @@
       ...
       //$ do something
       //$ and other thing as well
-      code
-      </pre></div>
+      ...</pre>
+      </div>
+      *Note: the annotation //$ [condition], with square brackets, is reserved and does not represent actions. 
             </p>
       </div>
 
     <div class="section"><h3>representation in the diagram<a name="representation"></a></h3>
       <p>
-      <img src="images/example_action_cut.png" alt="example_action_cut" width=300>
-      </p>
-      <p>
-      *width of the text before line return: a configurable option of the system <font color=red>[not implemented]</font>.
-      <br>
-      See also <a href="actions_modifiers.html">Action_modifiers</a>.
+      <img src="images/example_action_cut.png" alt="example_action_cut" width=200>
       </p>
     </div>
 
@@ -83,7 +79,7 @@ std::cout << "do 2"<< endl;
 
 return 0;
 }
-      <img src="images/example_action_cut.png" alt="example_action_cut" width=300>
+      <img src="images/example_action_cut.png" alt="example_action_cut" width=200>
 
       </pre></div>
       <div class="source"><pre>
@@ -100,7 +96,7 @@ std::cout << "do 2"<< endl;
 
 return 0;
 }
-      <img src="images/example_action_cut.png" alt="example_action_cut" width=300>
+      <img src="images/example_action_cut.png" alt="example_action_cut" width=200>
       </pre></div>
 
 

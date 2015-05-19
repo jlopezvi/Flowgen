@@ -36,7 +36,7 @@
   
     <div class="section"><h2>zooming (actions)<a name="zooming"></a></h2>
     <p>
-      The programmer can indicate at which level of detail a description of an action should appear by adding an integer immediately after the opening ‘//$’ of an annotation. Higher numbers indicate a finer level of detail; the zoom level is 0 by default, corresponding to the coarsest level of detail. This makes different zoom levels possible in visualizing the HTML output. <font color=red>[implemented zoom levels 0-1]</font>
+      The programmer can indicate at which level of detail a description of an action should appear by adding an integer immediately after the opening ‘//$’ of an annotation. Higher numbers indicate a finer level of detail; the zoom level is 0 by default, corresponding to the coarsest level of detail. This makes different zoom levels possible in visualizing the HTML output. <font color=red>[implemented zoom levels 0-2]</font>
     </p>
 
     <div class="section"><h3>annotation<a name="annotation"></a></h3>
@@ -60,11 +60,18 @@ code
 
     <div class="section"><h3>representation in the diagram<a name="representation"></a></h3>
       <p>
-      <a href="#" onmouseover="document.im6.src='images/detailed_zoom.jpg'" onmouseout="document.im6.src='images/outer_zoom.jpg'">
-      <img src="images/outer_zoom.jpg" name="im6" width=300 height=500 border="0" alt="picture" />
-      </a>
-      </p><p>
-      Note: Try mouse over. This is a website visualization. In Flowgen, interactive zooming could be performed on mouse click. <font color=red>[The present zooming visualization is not interactive: all different zoom levels are displayed in the corresponding HTML file]</font> 
+      <table>
+      <tr>
+      <td>Zoom level 0 </td>
+      <td>Zoom level 1 </td>
+      </tr>
+      <tr>
+      <td><img src="images/example_actions_zooming_zoom0.png" alt="picture"></td>
+      <td><img src="images/example_actions_zooming_zoom1.png" alt="picture"></td>
+      </tr>
+      </table>
+      <p>
+      *Note: both zoom level diagrams will be generated. <font color=red>Future versions of Flowgen could use an interactive zoom, for example on mouse click</font>
       </p>
     </div>
 
@@ -89,26 +96,20 @@ std::cin >> a;
 return 0;
 }
       </pre>
-      <a href="#" onmouseover="document.im7.src='images/detailed_zoom.jpg'" onmouseout="document.im7.src='images/outer_zoom.jpg'">
-      <img src="images/outer_zoom.jpg" name="im7" width=300 height=500 border="0" alt="picture" />
-      </a>
-      <br><br>
-      Note: Try mouse over. This is a website visualization. In Flowgen, interactive zooming could be performed on mouse click. <font color=red>[The present zooming visualization is not interactive: all different zoom levels are displayed in the corresponding HTML file]</font> 
       
+      <table>
+      <tr>
+      <td>Zoom level 0 </td>
+      <td>Zoom level 1 </td>
+      </tr>
+      <tr>
+      <td><img src="images/example_actions_zooming_zoom0.png" alt="picture"></td>
+      <td><img src="images/example_actions_zooming_zoom1.png" alt="picture"></td>
+      </tr>
+      </table>
+      <br><br>
      </div>
-    
-     <div class="section"><h3>operational implementation of interactive zooming visualization<a name="implementation"></a></h3>
-      <p>
-      <font color=red>[not implemented]</font> 
-      <br>
-      A full diagram will contain in general several zoomable sections. For each of these sections, a certain zoom level choice gets assigned a certain code. Hence, a particular instance of a full diagram, as selected by the user, will contain a unique combination of these codes. Hyperlinks will connect among different instances (code combinations) of the same full diagram. Either:
-      <br>
-      1) The GUI browser sends a message to the diagram constructor to tell the latter what diagram exactly we want to see. REAL-TIME GENERATION (can save memory / space / time)
-      <br>
-      2) All possible diagrams are built beforehand. OFF-LINE GENERATION.  
 
-      </p>
-    </div>
        
 </div>
 </body>
