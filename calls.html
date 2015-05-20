@@ -35,11 +35,11 @@
         
 
   
-    <div class="section"><h2>Calls to functions / class methods<a name="Functions/Methods"></a></h2>
+    <div class="section"><h2>Calls to functions / class methods</h2>
     <p>
-      Oftentimes, important actions are performed by calls to other functions or class methods. We can highlight these calls and make them appear in the diagram by using a postfix annotation <tt>//$</tt> at the end of a code line. This annotation also inserts a hyperlink to the diagrams for the functions or methods. This allows a developer to browse from the caller’s diagram to the called function’s diagram.
+      Some important actions are performed by calls to other functions or class methods. We can highlight these calls and make them appear explicitly in the diagram by using a postfix annotation <tt>//$</tt> at the end of a code line. This annotation also inserts a hyperlink to the diagrams for the functions or methods. This allows a developer to browse from the caller’s diagram to the called function’s diagram.
       <br><br>
-      <font color=red>[not implemented]</font> We could further distinguish when a certain action <em>uses</em> a call(s) or when this action <em>is</em> actually performed entirely within a call.
+      <font color=red>[not implemented]</font> We could further distinguish when a certain action <em>uses</em> a call(s) or when this action <em>is</em> actually performed entirely within a call (see 'Main call').
     </p>
 
     <div class="section"><h3>annotation<a name="annotation"></a></h3>
@@ -49,28 +49,62 @@
       code line involving method 1   //$
       code line involving function 2  //$
       code line involving method 3
-      
-      //$1 do something inside the previous
-      code line involving method 4
-      //$ do next thing
-
       </pre></div>
       </p>
       <p>
-      <u>Note</u>: it is possible to add a ‘normal’ comment, <tt>//comment</tt>, (not relevant to the diagrams) after the <tt>//$</tt> postfix.
+      <u>Note</u>: for C++ statements split across multiple lines, Flowgen looks for calls in the annotated line(s) only.<br>
+      <u>Note</u>: it is possible to add a ‘normal’ comment, <tt>//comment</tt>, (not relevant to the diagrams) after the <tt>//$</tt> postfix.<br>
+      <u>Zooming</u>: <font color=red>[not implemented]</font> it is possible to add a zooming option to the postfix, such as for example <tt>//$1</tt>. The call(s) on that code line will be associated to that zoom level.
       </p>
     </div>
 
     <div class="section"><h3>representation in the diagram<a name="representation"></a></h3>
       <p>
-      <img src="images/call.png" alt="figure" width=300>
+      <img src="images/example_calls_cut.png" alt="figure">
       </p>
       <p>
-      A click of the mouse will open the <b>hyperlinks</b> to the relevant function/method diagram.  <br>
+      A click of the mouse will open the <b>hyperlink</b> to the relevant function/method diagram.  <br>
       </p>
     </div>
 
+    <div class="section"><h3>examples<a name="examples"></a></h3>
 
+      <div class="source"><pre>
+//$ action 1
+int test, arg1, arg2, 
+int argument_for_sample_calculation_of_type_alpha
+test = function1(arg1, arg2) &&
+function2(arg1,
+argument_for_sample_calculation_of_type_alpha);  //$
+
+    <img src="images/example_calls_ex1_cut.png" alt="figure">
+      </pre></div>
+      
+      <div class="source"><pre>
+//$ action 1
+int test, arg1, arg2
+int argument_for_sample_calculation_of_type_alpha
+test = function1(arg1, arg2) &&
+      function2(arg1,    //$
+      argument_for_sample_calculation_of_type_alpha);
+
+    <img src="images/example_calls_ex2_cut.png" alt="figure">
+      </pre></div>
+      
+      <div class="source"><pre>
+
+//$ action 1
+bool test
+int arg1, arg2, argument_for_sample_calculation_of_type_alpha
+test = test_function1(arg1, arg2) &&  //$
+      test_function2(arg1,            //$
+      argument_for_sample_calculation_of_type_alpha);       //$
+
+    <img src="images/example_calls_ex3_cut.png" alt="figure">
+      </pre></div>
+      
+    </div>
+    
 </div>
 </div>
 </body>
