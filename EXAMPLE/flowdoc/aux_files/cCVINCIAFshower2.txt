@@ -3,17 +3,13 @@
 start
  skinparam activityBackgroundColor #white 
 partition #84add6 "do VINCIA parton shower" {
-
-while (FOR (int i = 1 ; i < numberofevents ; ++ i ))
-   :#b2cce5:1) prepare system of partons;
-   :#b2cce5:2) do phase 1 of shower;
-   partition #b2cce5 "3)..." {
-   :#e0eaf4:subaction;
-   }
-endwhile
-
+:#b2cce5:1) prepare system of partons;
+:#b2cce5:2) do phase 1 of shower;
+partition #b2cce5 "3)..." {
+:#e0eaf4:subaction;
 
 stop
+}
 }
 
 @enduml
