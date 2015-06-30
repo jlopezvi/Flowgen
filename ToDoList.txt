@@ -89,6 +89,9 @@ RESILIENCE TO USER ERRORS
   "//$". They might
   consider issuing a warning or an error for such cases.
 
+EVOLUTION
+Evolution of the documentation: when the source code changes, the generated documentation might become obsolete, e.g., since FlowGen annotations become obsolete (as any kinds of comments or documents). I wonder whether FlowGen or a similar tool can be integrated in the developers' way of working (IDE, version control system, etc) such that code modification pertaining to the annotated code alert the developer requesting her to confirm whether the annotation is still valid.
+
 FLOWGEN INNER WORKINGS
 - zoomlevel_beforeifstmt (keep for after the ifstmt)
 
