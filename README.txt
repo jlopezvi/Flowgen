@@ -45,7 +45,7 @@ That folder contains required library files such as "libclang.dylib".
 
 [FOR WINDOWS]
 
-- Install Python3 (if not present)
+- Install Python3 (does not seem to work with a portable version, needs a normal installation)
 
 - Install LLVM+Clang 3.1 (or superior). 
 
