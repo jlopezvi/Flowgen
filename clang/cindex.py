@@ -1040,6 +1040,10 @@ CursorKind.CUDAGLOBAL_ATTR = CursorKind(414)
 CursorKind.CUDAHOST_ATTR = CursorKind(415)
 CursorKind.CUDASHARED_ATTR = CursorKind(416)
 
+## added by caris from: llvm.org/svn/llvm-poject/cfe/trunk/bindings/python/clang/cindex.py
+CursorKind.VISIBILITY_ATTR = CursorKind(417)
+CursorKind.FRIEND_DECL = CursorKind(603)
+
 ###
 # Preprocessing
 CursorKind.PREPROCESSING_DIRECTIVE = CursorKind(500)
